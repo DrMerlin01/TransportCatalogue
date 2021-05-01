@@ -53,10 +53,10 @@ void ReadLineWithData(TransportCatalogue& cataloge) {
 					break;
 				}
 			}
-			auto lat = parser[cnt].substr(0, parser[cnt].size() - 1);
+			const auto lat = parser[cnt].substr(0, parser[cnt].size() - 1);
             ++cnt;
             string lng;
-            if(parser[cnt].find(",") != std::string::npos || cnt + 1 < parser.size()) {
+            if(parser[cnt].find(",") != std::string::npos) {
                 lng = parser[cnt].substr(0, parser[cnt].size() - 1);
             } else {
                 lng = parser[cnt];
@@ -66,7 +66,7 @@ void ReadLineWithData(TransportCatalogue& cataloge) {
 		} else if (str.find("Bus") != std::string::npos) {
 			buses.insert(str);
 			++count;
-		} else if (!str.empty()) {
+		}else if (!str.empty()) {
             ++count;
         }
 		if (count >= result) {

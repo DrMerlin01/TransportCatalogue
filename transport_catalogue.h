@@ -31,6 +31,7 @@ private:
     std::unordered_map<std::string_view, const Bus*> bus_by_name_;
     
     double GetDistanceBetweenStops(std::string_view from, std::string_view to) const;
+    
 public:
     void AddBus(const std::string& name, const std::vector<std::string_view>& bus_stops, bool is_circular);
     

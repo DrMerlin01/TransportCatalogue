@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <utility>
 #include <iostream>
+#include <unordered_set>
 
 using namespace std;
 
@@ -26,16 +27,18 @@ double TransportCatalogue::GetDistanceBetweenStops(std::string_view from, std::s
 }
 
 const TransportCatalogue::Stop* TransportCatalogue::GetStop(string_view name) const {
-	if (stop_by_name_.count(name)) {
-		return stop_by_name_.at(name);
+	const auto stop = stop_by_name_.find(name);
+    if (stop != stop_by_name_.end()) {
+		return stop->second;
 	} else {
 		return nullptr;
 	}
 }
 
 const TransportCatalogue::Bus* TransportCatalogue::GetBus(string_view name) const {
-    if (bus_by_name_.count(name)) {
-		return bus_by_name_.at(name);
+    const auto bus = bus_by_name_.find(name);
+    if (bus != bus_by_name_.end()) {
+		return bus->second;
 	} else {
 		return nullptr;
 	}
@@ -47,14 +50,16 @@ InfoOnRoute TransportCatalogue::GetInfoOnRoute(string_view name) const {
 		return {};
 	}
 
-	double lenght_route = 0.;
-	size_t count_uniq_stops = bus->route.size() - 1;
-	if (bus->is_circular) {
-		count_uniq_stops = bus->route.size() / 2 + 1;
-	}
+    unordered_set<string_view> seen_stops;
+	size_t count_uniq_stops = 0;
+    double lenght_route = 0.;
 
 	for (size_t i = 0; i < bus->route.size() - 1; ++i) {
 		lenght_route += GetDistanceBetweenStops(bus->route[i], bus->route[i + 1]);  
+        if (seen_stops.count(bus->route[i]) == 0) {
+            ++count_uniq_stops;
+            seen_stops.insert(bus->route[i]);
+        }
 	}
 
 	return InfoOnRoute{ bus->route.size(), count_uniq_stops, lenght_route };
