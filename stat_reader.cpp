@@ -12,8 +12,8 @@ ostream& operator<<(ostream& out, const InfoOnRoute& info) {
 	}
 	else {
 		out << info.count_bus_stop << " stops on route, "s
-			<< info.count_unique_bus_stop << " unique stops, "s
-			<< setprecision(6) << info.lenght_route << " route length"s << endl;
+		<< info.count_unique_bus_stop << " unique stops, "s
+		<< setprecision(6) << info.lenght_route << " route length"s << endl;
 	}
 	return out;
 }
@@ -24,28 +24,41 @@ void GetInfoOnRoutes(TransportCatalogue& cataloge) {
 	string str;
 	size_t count = 0;
 	vector<string> buses;
+    vector<string> stops;
 	while (getline(cin, str)) {
 		if (str.find("Bus") != std::string::npos) {
-			auto parser = SplitIntoWords(str);
-            string bus_name;
-            for (size_t i = 1; i < parser.size(); ++i) {
-                if (bus_name.size() != 0) {
-                    bus_name += " ";
-                }
-                bus_name += parser[i];
-            }
+            const string bus_name = str.substr(4);
 			buses.push_back(bus_name);
 			++count;
+		} else if (str.find("Stop") != std::string::npos) {
+            const string name = str.substr(5);
+            stops.push_back(name);
+            ++count;
 		} else if (!str.empty()) {
             ++count;
-        } 
+		} 
 		if (count >= count_requests) {
 			break;
 		}
 	}
-
+	
 	for (const auto& bus : buses) {
 		cout << "Bus "s << bus << ": "s;
 		cout << cataloge.GetInfoOnRoute(bus);
+	}
+    for (const auto& stop: stops) {
+        cout << "Stop "s << stop << ": "s;
+		const auto buses_by_stop = cataloge.GetBusesThroughStop(stop);
+        if (cataloge.GetStop(stop) == nullptr) {
+            cout << "not found" << endl;
+		} else if (buses_by_stop.empty()) {
+            cout << "no buses" << endl;
+		} else { 
+            cout << "buses"s;
+            for (const auto bus : buses_by_stop) {
+                cout << " "s << bus;
+			}
+            cout << endl;
+		}
 	}
 }

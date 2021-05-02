@@ -19,16 +19,17 @@ private:
     struct Stop {
         std::string name;
         Coordinates coordinates;
-    };
+	};
     struct Bus {
         std::string name;
         bool is_circular;
         std::vector<std::string_view> route;
-    };
+	};
     std::deque<Bus> buses_;
     std::deque<Stop> bus_stops_;
     std::unordered_map<std::string_view, const Stop*> stop_by_name_;
     std::unordered_map<std::string_view, const Bus*> bus_by_name_;
+    std::unordered_map<std::string_view, std::set<std::string_view>> buses_by_stop_name_;
     
     double GetDistanceBetweenStops(std::string_view from, std::string_view to) const;
     
@@ -40,6 +41,8 @@ public:
     const Stop* GetStop(std::string_view name) const;
     
     const Bus* GetBus(std::string_view name) const;
+    
+    std::set<std::string_view> GetBusesThroughStop(std::string_view stop_name) const;
     
     InfoOnRoute GetInfoOnRoute(std::string_view name) const;
 };

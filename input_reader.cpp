@@ -1,30 +1,10 @@
 #include "input_reader.h"
 #include "geo.h"
-#include <iostream>
 #include <unordered_set>
 #include <stdlib.h>
 #include <string_view>
 
 using namespace std;
-
-vector<string> SplitIntoWords(const string& text) {
-	vector<string> words;
-	string word;
-	for (const char c : text) {
-		if (c == ' ') {
-			if (!word.empty()) {
-				words.push_back(word);
-				word.clear();
-			}
-		} else {
-			word += c;
-		}
-	}
-	if (!word.empty()) {
-		words.push_back(word);
-	}
-	return words;
-}
 
 void ReadLineWithData(TransportCatalogue& cataloge) {
 	size_t result;
@@ -34,89 +14,64 @@ void ReadLineWithData(TransportCatalogue& cataloge) {
 	unordered_set<string> buses;
 	while (getline(cin, str)) {
 		if (str.find("Stop") != std::string::npos) {
-			auto parser = SplitIntoWords(str);
-			string name;
-            size_t cnt = 1;
-			for (size_t i = 1; i < parser.size(); ++i) {
-				if (parser[i].find(":") == std::string::npos) {
-					if(name.size() != 0) {
-						name += " ";
-					}
-					name += parser[i];
-                    ++cnt;
-				} else {
-					if(name.size() != 0) {
-						name += " ";
-					}
-					name += parser[i].substr(0, parser[i].size() - 1);
-                    ++cnt;
-					break;
-				}
-			}
-			const auto lat = parser[cnt].substr(0, parser[cnt].size() - 1);
-            ++cnt;
+            auto pos = str.find(":");
+			const string name = str.substr(5, pos - 5);
+            str = str.substr(pos + 2);
+            pos = str.find(",");
+            const auto lat = str.substr(0, pos);
+            str = str.substr(pos + 2);
+            pos = str.find(",");
             string lng;
-            if(parser[cnt].find(",") != std::string::npos) {
-                lng = parser[cnt].substr(0, parser[cnt].size() - 1);
-            } else {
-                lng = parser[cnt];
-            }
+            if(pos != std::string::npos) {
+                lng = str.substr(0, pos);
+			} else {
+                lng = str;
+			}
 			cataloge.AddStop(name, { atof(lat.c_str()), atof(lng.c_str()) });
 			++count;
 		} else if (str.find("Bus") != std::string::npos) {
 			buses.insert(str);
 			++count;
-		}else if (!str.empty()) {
-            ++count;
-        }
+		}
 		if (count >= result) {
 			break;
 		}
 	}
-
-	for (auto& bus : buses) {
-		bool circle = false;
-		auto parser = SplitIntoWords(bus);
+	
+	for (string bus : buses) {
+		bool is_circle = false;
 		vector<string_view> route;
-		string name;
-        size_t cnt = 1;
-        string bus_name;
-        for (size_t i = 1; i < parser.size(); ++i) {
-            if (parser[i].find(":") == std::string::npos) {
-                if(bus_name.size() != 0) {
-                    bus_name += " ";
-                }
-                bus_name += parser[i];
-                ++cnt;
-            } else {
-                if(bus_name.size() != 0) {
-                    bus_name += " ";
-                }
-                bus_name += parser[i].substr(0, parser[i].size() - 1);
-                ++cnt;
-                break;
-            }
-        }
-		for (size_t i = cnt; i < parser.size(); ++i) {
-			if (parser[i] == ">"|| parser[i] == "-") {
-                const auto stop_ = cataloge.GetStop(name);
-				route.push_back(stop_->name);
-				name = "";
-			} else {
-                if(!name.empty()) {
-                    name += " ";
-                }
-				name += parser[i];
-			}
+        auto pos = bus.find(":");
+        const string bus_name = bus.substr(4, pos - 4);
+		bus = bus.substr(pos + 2);
+        string name;
+        string spliter = ">";
+        if (bus.find("-") != std::string::npos) {
+            spliter = "-";
+            is_circle = true;
 		}
-        const auto stop_ = cataloge.GetStop(name);
-		route.push_back(stop_->name);
-		if (bus.find("-") != std::string::npos) {
-			circle = true;
+		while(!bus.empty()) {
+            pos = bus.find(spliter);
+            if(pos == std::string::npos) {
+                name = bus;
+                break;
+			} 
+            name = bus.substr(0, pos - 1);
+			const auto stop = cataloge.GetStop(name);
+            if(stop != nullptr) {
+                route.push_back(stop->name);
+			}
+            bus = bus.substr(pos + 2);
+		}
+        const auto stop = cataloge.GetStop(name);
+        if(stop != nullptr) {
+            route.push_back(stop->name);
+		}
+		if (is_circle) {
 			for (int i = route.size() - 2; i >= 0; --i) {
 				route.push_back(route[i]);
 			}
 		}
-		cataloge.AddBus(bus_name, route, circle);
+		cataloge.AddBus(bus_name, route, is_circle);
 	}
 }
