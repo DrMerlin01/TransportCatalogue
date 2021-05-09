@@ -3,5 +3,9 @@
 #include <iostream>
 #include "transport_catalogue.h"
 
-std::ostream& operator<<(std::ostream& out, const InfoOnRoute& r);
-void GetInfoOnRoutes(TransportCatalogue& cataloge);
+namespace transport_catalogue {
+	namespace detail {
+		std::ostream& operator<<(std::ostream& out, const content::InfoOnRoute& r);
+		void GetInfoOnRoutes(TransportCatalogue& cataloge);
+	}
+}
