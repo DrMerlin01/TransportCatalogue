@@ -1,106 +1,112 @@
 #include "input_reader.h"
 #include "geo.h"
-#include <iostream>
 #include <unordered_set>
-#include <stdlib.h>
 #include <string_view>
+#include <stdlib.h>
 
 using namespace std;
 
 namespace transport_catalogue {
-	namespace detail {
-		void ReadLineWithData(TransportCatalogue& cataloge) {
-			size_t result;
-			cin >> result;
-			string str;
+	namespace input_reader {
+		void ParseAndAddStop(TransportCatalogue& catalogue, std::string& stop, unordered_map<std::string, std::string>& stops) {
+			auto position = stop.find(":"s);
+			const string stop_name = stop.substr(5, position - 5);
+			stop = stop.substr(position + 2);
+			position = stop.find(","s);
+			const auto lat = stop.substr(0, position);
+			stop = stop.substr(position + 2);
+			position = stop.find(","s);
+			string lng;
+			if (position != string::npos) {
+				lng = stop.substr(0, position);
+				stops[stop_name] = stop.substr(position + 2);
+			} else {
+				lng = stop;
+			}
+			catalogue.AddStop(stop_name, { atof(lat.c_str()), atof(lng.c_str()) });
+		}
+		
+		void ParseAndAddAdditionalInfoAboutStop(TransportCatalogue& catalogue, const std::string& first_stop, std::string& info) {
+			while (!info.empty()) {
+				auto position = info.find("m"s);
+				const string distance = info.substr(0, position);
+				info = info.substr(position + 5);
+				position = info.find(","s);
+				const string second_stop = info.substr(0, position);
+				const auto stop_first = catalogue.GetStop(first_stop);
+				const auto stop_second = catalogue.GetStop(second_stop);
+				catalogue.SetDistanceBetweenStops(stop_first->name, stop_second->name, atoi(distance.c_str()));
+				if (position != string::npos) {
+					info = info.substr(position + 2);
+				} else {
+					break;
+				}
+			}
+		}
+		
+		void ParseAndAddBus(TransportCatalogue& catalogue, std::string& bus) {
+			bool is_circle = false;
+			vector<string_view> route;
+			auto position = bus.find(":"s);
+			const string bus_name = bus.substr(4, position - 4);
+			bus = bus.substr(position + 2);
+			string name;
+			string spliter = ">"s;
+			if (bus.find("-"s) != string::npos) {
+				spliter = "-"s;
+				is_circle = true;
+			}
+			while (!bus.empty()) {
+				position = bus.find(spliter);
+				if (position == string::npos) {
+					name = bus;
+					break;
+				} 
+				name = bus.substr(0, position - 1);
+				const auto stop = catalogue.GetStop(name);
+				if (stop != nullptr) {
+					route.push_back(stop->name);
+				}
+				bus = bus.substr(position + 2);
+			}
+			const auto stop = catalogue.GetStop(name);
+			if (stop != nullptr) {
+				route.push_back(stop->name);
+			}
+			if (is_circle) {
+				for (int i = route.size() - 2; i >= 0; --i) {
+					route.push_back(route[i]);
+				}
+			}
+			catalogue.AddBus(bus_name, route, is_circle);
+		}
+		
+		void ReadLineAndParseData(TransportCatalogue& catalogue, istream& in) {
+			size_t count_requests;
+			in >> count_requests;
+			string line;
 			size_t count = 0;
 			unordered_set<string> buses;
 			unordered_map<string, string> stops;
-			while (getline(cin, str)) {
-				if (str.find("Stop") != std::string::npos) {
-					auto pos = str.find(":");
-					const string name = str.substr(5, pos - 5);
-					str = str.substr(pos + 2);
-					pos = str.find(",");
-					const auto lat = str.substr(0, pos);
-					str = str.substr(pos + 2);
-					pos = str.find(",");
-					string lng;
-					if(pos != std::string::npos) {
-						lng = str.substr(0, pos);
-						stops[name] = str.substr(pos + 2);
-					} else {
-						lng = str;
-					}
-					cataloge.AddStop(name, { atof(lat.c_str()), atof(lng.c_str()) });
+			while (getline(in, line)) {
+				if (line.find("Stop"s) != string::npos) {
+					ParseAndAddStop(catalogue, line, stops);
 					++count;
-				} else if (str.find("Bus") != std::string::npos) {
-					buses.insert(str);
+				} else if (line.find("Bus"s) != string::npos) {
+					buses.insert(line);
 					++count;
 				}
-				if (count >= result) {
+				if (count >= count_requests) {
 					break;
 				}
 			}
 
-			for(auto [first_stop, distances] : stops) {
-				while(!distances.empty()) {
-					auto pos = distances.find("m");
-					const string distance = distances.substr(0, pos);
-					distances = distances.substr(pos + 5);
-					pos = distances.find(",");
-					string second_stop;
-					if(pos != std::string::npos) {
-						second_stop = distances.substr(0, pos);
-						const auto stop_first = cataloge.GetStop(first_stop);
-						const auto stop_second = cataloge.GetStop(second_stop);
-						cataloge.SetDistanceBetweenStops(stop_first->name, stop_second->name, atoi(distance.c_str()));
-						distances = distances.substr(pos + 2);
-					} else {
-						second_stop = distances.substr(0, pos);
-						const auto stop_first = cataloge.GetStop(first_stop);
-						const auto stop_second = cataloge.GetStop(second_stop);
-						cataloge.SetDistanceBetweenStops(stop_first->name, stop_second->name, atoi(distance.c_str()));
-						break;
-					}
-				}
+			for (auto [first_stop, distances] : stops) {
+				ParseAndAddAdditionalInfoAboutStop(catalogue, first_stop, distances);
 			}
 
 			for (string bus : buses) {
-				bool is_circle = false;
-				vector<string_view> route;
-				auto pos = bus.find(":");
-				const string bus_name = bus.substr(4, pos - 4);
-				bus = bus.substr(pos + 2);
-				string name;
-				string spliter = ">";
-				if (bus.find("-") != std::string::npos) {
-					spliter = "-";
-					is_circle = true;
-				}
-				while(!bus.empty()) {
-					pos = bus.find(spliter);
-					if(pos == std::string::npos) {
-						name = bus;
-						break;
-					} 
-					name = bus.substr(0, pos - 1);
-					const auto stop = cataloge.GetStop(name);
-					if(stop != nullptr) {
-						route.push_back(stop->name);
-					}
-					bus = bus.substr(pos + 2);
-				}
-				const auto stop = cataloge.GetStop(name);
-				if(stop != nullptr) {
-					route.push_back(stop->name);
-				}
-				if (is_circle) {
-					for (int i = route.size() - 2; i >= 0; --i) {
-						route.push_back(route[i]);
-					}
-				}
-				cataloge.AddBus(bus_name, route, is_circle);
+				ParseAndAddBus(catalogue, bus);
 			}
 		}
 	}

@@ -6,6 +6,12 @@
 using namespace std;
 
 namespace transport_catalogue {
+	namespace detail {
+		size_t StopsPairHasher::operator()(const std::pair<const content::Stop*, const content::Stop*>& stops_pair) const {
+			return hasher(stops_pair.first) + hasher(stops_pair.second) * 7;
+		} 
+	}
+	
 	void TransportCatalogue::AddBus(const string& name, const std::vector<string_view>& bus_stops, bool is_circular) {
 		buses_.push_back({ move(name), is_circular, bus_stops });
 		bus_by_name_[buses_.back().name] = &buses_.back();
@@ -98,16 +104,16 @@ namespace transport_catalogue {
 		double actual_lenght_route = 0.;
 		double geographic_lenght_route = 0.;
 
-		for (size_t i = 0; i < bus->route.size() - 1; ++i) {
-			actual_lenght_route += GetActualDistanceBetweenStops(bus->route[i], bus->route[i + 1]);  
-			geographic_lenght_route += GetGeographicDistanceBetweenStops(bus->route[i], bus->route[i + 1]);
-			if (seen_stops.count(bus->route[i]) == 0) {
+		for (size_t i = 0; i < bus->stops.size() - 1; ++i) {
+			actual_lenght_route += GetActualDistanceBetweenStops(bus->stops[i], bus->stops[i + 1]);  
+			geographic_lenght_route += GetGeographicDistanceBetweenStops(bus->stops[i], bus->stops[i + 1]);
+			if (seen_stops.count(bus->stops[i]) == 0) {
 				++count_uniq_stops;
-				seen_stops.insert(bus->route[i]);
+				seen_stops.insert(bus->stops[i]);
 			}
 		}
 		const double curvature = actual_lenght_route / geographic_lenght_route;
 
-		return { bus->route.size(), count_uniq_stops, actual_lenght_route, curvature };
+		return { bus->stops.size(), count_uniq_stops, actual_lenght_route, curvature };
 	}
 }

@@ -5,13 +5,14 @@
 
 using namespace std;
 using namespace transport_catalogue;
-using namespace transport_catalogue::detail;
+using namespace transport_catalogue::input_reader;
+using namespace transport_catalogue::stat_reader;
 
 int main() {
-	TransportCatalogue cataloge;
+	TransportCatalogue catalogue;
 	
-	ReadLineWithData(cataloge);
-	GetInfoOnRoutes(cataloge);
+	ReadLineAndParseData(catalogue, cin);
+	GetInfoOnRoutes(catalogue, cin, cout);
 	
 	return 0;
 }
