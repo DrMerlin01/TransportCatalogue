@@ -5,23 +5,17 @@
 
 using namespace std;
 
-namespace transport_catalogue {
-	namespace detail {
-		size_t StopsPairHasher::operator()(const std::pair<const content::Stop*, const content::Stop*>& stops_pair) const {
-			return hasher(stops_pair.first) + hasher(stops_pair.second) * 7;
-		} 
-	}
-	
-	void TransportCatalogue::AddBus(const string& name, const std::vector<string_view>& bus_stops, bool is_circular) {
-		buses_.push_back({ move(name), is_circular, bus_stops });
+namespace transport_catalogue {	
+	void TransportCatalogue::AddBus(const string& name, const vector<string_view>& bus_stops, bool is_roundtrip) {        
+		buses_.push_back({ move(name), is_roundtrip, bus_stops });
 		bus_by_name_[buses_.back().name] = &buses_.back();
 
-		for (const std::string_view stop : bus_stops) {
+		for (const string_view stop : bus_stops) {
 			buses_by_stop_name_[stop].insert(buses_.back().name);
 		}
 	}
 
-	void TransportCatalogue::AddStop(const std::string& name, const geo::Coordinates coords) {
+	void TransportCatalogue::AddStop(const string& name, const geo::Coordinates coords) {
 		bus_stops_.push_back({ move(name), coords });
 		stop_by_name_[bus_stops_.back().name] = &bus_stops_.back();
 	}
@@ -32,11 +26,11 @@ namespace transport_catalogue {
 		if (from_stop == nullptr || to_stop == nullptr) {
 			return;
 		}
-
+        
 		stops_to_dist_[{from_stop, to_stop}] = distance;
 	}
 
-	double TransportCatalogue::GetActualDistanceBetweenStops(std::string_view from, std::string_view to) const {
+	double TransportCatalogue::GetActualDistanceBetweenStops(string_view from, string_view to) const {
 		const auto from_stop = GetStop(from);
 		const auto to_stop = GetStop(to);
 		if (from_stop == nullptr || to_stop == nullptr) {
@@ -56,7 +50,7 @@ namespace transport_catalogue {
 		}
 	}
 
-	double TransportCatalogue::GetGeographicDistanceBetweenStops(std::string_view from, std::string_view to) const {
+	double TransportCatalogue::GetGeographicDistanceBetweenStops(string_view from, string_view to) const {
 		const auto from_stop = GetStop(from);
 		const auto to_stop = GetStop(to);
 		if (from_stop == nullptr || to_stop == nullptr) {
@@ -66,7 +60,7 @@ namespace transport_catalogue {
 		return geo::ComputeDistance(from_stop->coordinates, to_stop->coordinates);
 	}
 
-	const content::Stop* TransportCatalogue::GetStop(string_view name) const {
+	const domain::Stop* TransportCatalogue::GetStop(string_view name) const {
 		const auto stop = stop_by_name_.find(name);
 		if (stop != stop_by_name_.end()) {
 			return stop->second;
@@ -75,7 +69,7 @@ namespace transport_catalogue {
 		}
 	}
 
-	const content::Bus* TransportCatalogue::GetBus(string_view name) const {
+	const domain::Bus* TransportCatalogue::GetBus(string_view name) const {
 		const auto bus = bus_by_name_.find(name);
 		if (bus != bus_by_name_.end()) {
 			return bus->second;
@@ -93,12 +87,12 @@ namespace transport_catalogue {
 		}
 	}
 
-	content::InfoOnRoute TransportCatalogue::GetInfoOnRoute(string_view name) const {
+	domain::InfoOnRoute TransportCatalogue::GetInfoOnRoute(string_view name) const {
 		const auto bus = GetBus(name);
 		if (bus == nullptr) {
 			return {};
 		}
-
+        
 		unordered_set<string_view> seen_stops;
 		size_t count_uniq_stops = 0;
 		double actual_lenght_route = 0.;
