@@ -7,85 +7,85 @@
 #include <variant>
 
 namespace json {
-    class Node;
-    using Dict = std::map<std::string, Node>;
-    using Array = std::vector<Node>;
+	class Node;
+	using Dict = std::map<std::string, Node>;
+	using Array = std::vector<Node>;
 
-    struct RenderContext final {
-        RenderContext(std::ostream& out);
+	struct RenderContext final {
+		RenderContext(std::ostream& out);
 
-        RenderContext(std::ostream& out, int indent_step, int indent = 0);
+		RenderContext(std::ostream& out, int indent_step, int indent = 0);
 
-        RenderContext Indented() const;
+		RenderContext Indented() const;
 
-        void RenderIndent() const;
+		void RenderIndent() const;
 
-        std::ostream& out;
-        int indent_step = 0;
-        int indent = 0;
-    };
+		std::ostream& out;
+		int indent_step = 0;
+		int indent = 0;
+	};
 
-    // Эта ошибка должна выбрасываться при ошибках парсинга JSON
-    class ParsingError : public std::runtime_error {
-    public:
-        using runtime_error::runtime_error;
-    };
+	// Эта ошибка должна выбрасываться при ошибках парсинга JSON
+	class ParsingError : public std::runtime_error {
+	public:
+		using runtime_error::runtime_error;
+	};
 
-    class Node final : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> {
-    public:
-        using variant::variant;
-        using Value = variant;
+	class Node final : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> {
+	public:
+		using variant::variant;
+		using Value = variant;
 
-        bool IsNull() const;
+		bool IsNull() const;
 
-        bool IsArray() const;
+		bool IsArray() const;
 
-        const Array& AsArray() const;
+		const Array& AsArray() const;
 
-        bool IsMap() const;
+		bool IsMap() const;
 
-        const Dict& AsMap() const;
+		const Dict& AsMap() const;
 
-        bool IsBool() const;
+		bool IsBool() const;
 
-        bool AsBool() const;
+		bool AsBool() const;
 
-        bool IsInt() const;
+		bool IsInt() const;
 
-        int AsInt() const;
+		int AsInt() const;
 
-        bool IsPureDouble() const;
+		bool IsPureDouble() const;
 
-        bool IsDouble() const;
+		bool IsDouble() const;
 
-        double AsDouble() const;
+		double AsDouble() const;
 
-        bool IsString() const;
+		bool IsString() const;
 
-        const std::string& AsString() const;
+		const std::string& AsString() const;
 
-        const Value& GetValue() const;
+		const Value& GetValue() const;
 
-        bool operator==(const Node& rhs) const;
-        
-        bool operator!=(const Node& rhs) const;
-    };
+		bool operator==(const Node& rhs) const;
 
-    class Document {
-    public:
-        explicit Document(Node root);
+		bool operator!=(const Node& rhs) const;
+	};
 
-        const Node& GetRoot() const;
+	class Document {
+	public:
+		explicit Document(Node root);
 
-        bool operator==(const Document& rhs) const;
-        
-        bool operator!=(const Document& rhs) const;
+		const Node& GetRoot() const;
 
-    private:
-        Node root_;
-    };
+		bool operator==(const Document& rhs) const;
 
-    Document Load(std::istream& input);
+		bool operator!=(const Document& rhs) const;
 
-    void Print(const Document& doc, std::ostream& output);
-}  // namespace json
+	private:
+		Node root_;
+	};
+
+	Document Load(std::istream& input);
+
+	void Print(const Document& doc, std::ostream& output);
+} // namespace json

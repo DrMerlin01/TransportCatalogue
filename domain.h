@@ -9,7 +9,7 @@
 #include "geo.h"
 
 namespace transport_catalogue {
-    namespace domain {
+	namespace domain {
 		struct InfoOnRoute final {
 			size_t total_bus_stops;
 			size_t unique_bus_stops;
@@ -27,51 +27,51 @@ namespace transport_catalogue {
 			std::string name;
 			geo::Coordinates coordinates;
 		};
-        
-        struct StopsPairHasher {
+
+		struct StopsPairHasher {
 			size_t operator()(const std::pair<const Stop*, const Stop*>& stops_pair) const;
 
 			std::hash<const void*> hasher;
 		};
 	}
-	    
-    namespace response {
-        struct Stop final {
-            std::string_view name;
-            std::set<std::string_view> buses_on_stop;
-        };
 
-        struct Bus final {
-            std::string_view name;
-            domain::InfoOnRoute info;
-        };
-    }
+	namespace response {
+		struct Stop final {
+			std::string_view name;
+			std::set<std::string_view> buses_on_stop;
+		};
 
-    namespace request {
-        struct Request {
-            std::string type;
-            std::string name;
-        };
-        
-        struct Identification final : Request {
-            int id;
-        };
+		struct Bus final {
+			std::string_view name;
+			domain::InfoOnRoute info;
+		};
+	}
 
-        struct Stop final : Request {
-            geo::Coordinates coordinates;
-            std::unordered_map<std::string, int> stop_to_dist;
-        };
+	namespace request {
+		struct Request {
+			std::string type;
+			std::string name;
+		};
 
-        struct Bus final : Request {
-            bool is_roundtrip;
-            std::vector<std::string> bus_stops;
-        };
-    }
-    
-    struct ContentRequests {
-        std::vector<request::Stop> stops;
-        std::vector<request::Bus> buses;
-    };
+		struct Identification final : Request {
+			int id;
+		};
 
-    using Requests = std::vector<request::Identification>;
+		struct Stop final : Request {
+			geo::Coordinates coordinates;
+			std::unordered_map<std::string, int> stop_to_dist;
+		};
+
+		struct Bus final : Request {
+			bool is_roundtrip;
+			std::vector<std::string> bus_stops;
+		};
+	}
+
+	struct ContentRequests {
+		std::vector<request::Stop> stops;
+		std::vector<request::Bus> buses;
+	};
+
+	using Requests = std::vector<request::Identification>;
 }

@@ -5,8 +5,8 @@
 
 using namespace std;
 
-namespace transport_catalogue {	
-	void TransportCatalogue::AddBus(const string& name, const vector<string_view>& bus_stops, bool is_roundtrip) {        
+namespace transport_catalogue {
+	void TransportCatalogue::AddBus(const string& name, const vector<string_view>& bus_stops, bool is_roundtrip) {
 		buses_.push_back({ move(name), is_roundtrip, bus_stops });
 		bus_by_name_[buses_.back().name] = &buses_.back();
 
@@ -26,7 +26,7 @@ namespace transport_catalogue {
 		if (from_stop == nullptr || to_stop == nullptr) {
 			return;
 		}
-        
+
 		stops_to_dist_[{from_stop, to_stop}] = distance;
 	}
 
@@ -92,14 +92,14 @@ namespace transport_catalogue {
 		if (bus == nullptr) {
 			return {};
 		}
-        
+
 		unordered_set<string_view> seen_stops;
 		size_t count_uniq_stops = 0;
 		double actual_lenght_route = 0.;
 		double geographic_lenght_route = 0.;
 
 		for (size_t i = 0; i < bus->stops.size() - 1; ++i) {
-			actual_lenght_route += GetActualDistanceBetweenStops(bus->stops[i], bus->stops[i + 1]);  
+			actual_lenght_route += GetActualDistanceBetweenStops(bus->stops[i], bus->stops[i + 1]);
 			geographic_lenght_route += GetGeographicDistanceBetweenStops(bus->stops[i], bus->stops[i + 1]);
 			if (seen_stops.count(bus->stops[i]) == 0) {
 				++count_uniq_stops;
