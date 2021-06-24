@@ -6,7 +6,7 @@ namespace transport_catalogue {
 	using namespace std;
 	using namespace std::literals;
 
-	JsonReader::JsonReader(istream& in)
+	JsonReader::JsonReader(istream& in) 
 		: document_(json::Load(in)) {
 	}
 
@@ -42,7 +42,7 @@ namespace transport_catalogue {
 				buses_on_stop.push_back(json::Node{string{stop}});
 			}
 
-			return { json::Dict{{ "buses"s, buses_on_stop }, { "request_id"s, id }} };
+			return { json::Dict{{ "request_id"s, id }, { "buses"s, buses_on_stop }} };
 		} else {
 			return { json::Dict{{ "request_id"s, id }, { "error_message"s, json::Node{string("not found"s)} }} };
 		}
@@ -50,13 +50,13 @@ namespace transport_catalogue {
 
 	json::Node JsonReader::CreateBusNode(const optional<response::Bus> bus, const int id) const {
 		if(bus.has_value()) {
-			return { json::Dict{{ "curvature"s, bus.value().info.curvature },
-								{ "request_id"s, id },
-								{ "route_length"s, bus.value().info.lenght_route },
-								{ "stop_count"s, static_cast<int>(bus.value().info.total_bus_stops) },
-								{ "unique_stop_count"s, static_cast<int>(bus.value().info.unique_bus_stops) }}};
+			return { json::Dict{{ "request_id"s, id },
+				{ "curvature"s, bus.value().info.curvature },
+				{ "route_length"s, bus.value().info.lenght_route },
+				{ "stop_count"s, static_cast<int>(bus.value().info.total_bus_stops)},
+				{ "unique_stop_count"s, static_cast<int>(bus.value().info.unique_bus_stops) }}};
 		} else {
-			return {json::Dict{{"request_id"s, id}, {"error_message"s, json::Node{string("not found"s)}}}};
+			return { json::Dict{{ "request_id"s, id }, { "error_message"s, json::Node{string("not found"s)} }} };
 		}
 	}
 
@@ -76,7 +76,7 @@ namespace transport_catalogue {
 
 		return { move(stops), move(buses) };
 	}
-
+	
 	request::Stop JsonReader::ReadStopFromJson(const json::Dict& content_stop) const {
 		request::Stop stop;
 		stop.type = "Stop"s;
@@ -103,8 +103,6 @@ namespace transport_catalogue {
 			for (int i = bus.bus_stops.size() - 2; i >= 0; --i) {
 				bus.bus_stops.push_back(bus.bus_stops[i]);
 			}
-		} else {
-			bus.bus_stops.push_back(bus.bus_stops[0]);
 		}
 
 		return bus;

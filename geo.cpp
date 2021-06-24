@@ -3,9 +3,9 @@
 #include "geo.h"
 #include <cmath>
 
-using namespace std;
-
 namespace geo {
+	using namespace std;
+	
 	double ComputeDistance(Coordinates from, Coordinates to) {
 		const double dr = M_PI / 180.0;
 
