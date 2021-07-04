@@ -33,6 +33,20 @@ namespace transport_catalogue {
 
 			std::hash<const void*> hasher;
 		};
+
+		bool operator==(const Stop& lhs, const Stop& rhs);
+
+		bool operator!=(const Stop& lhs, const Stop& rhs);
+
+		bool operator<(const Stop& lhs, const Stop& rhs);
+
+		bool operator<=(const Stop& lhs, const Stop& rhs);
+
+		bool operator>(const Stop& lhs, const Stop& rhs);
+
+		bool operator>=(const Stop& lhs, const Stop& rhs);
+
+		bool operator<(const Bus& lhs, const Bus& rhs);
 	}
 
 	namespace response {
@@ -52,7 +66,7 @@ namespace transport_catalogue {
 			std::string type;
 			std::string name;
 		};
-
+		
 		struct Identification final : Request {
 			int id;
 		};

@@ -25,6 +25,10 @@ int main() {
 			responses.push_back(json_reader.CreateStopNode(request_handler.GetStopResponse(request.name), request.id));
 		} else if (request.type == "Bus"s) {
 			responses.push_back(json_reader.CreateBusNode(request_handler.GetBusResponse(request.name), request.id));
+		} else if (request.type == "Map"s) {
+			renderer::RenderSettings render_settings = json_reader.GetRendererSettings();
+			renderer::MapRenderer renderer(render_settings);
+			responses.push_back(json_reader.CreateMapNode(request_handler.RenderMap(renderer), request.id));
 		} else {
 			// unknown request
 		}

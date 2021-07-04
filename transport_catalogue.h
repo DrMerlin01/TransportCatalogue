@@ -31,6 +31,10 @@ namespace transport_catalogue {
 
 		const domain::Bus* GetBus(std::string_view name) const;
 
+		const std::deque<domain::Stop> GetStops() const;
+
+		const std::deque<domain::Bus> GetBuses() const;
+
 		std::set<std::string_view> GetBusesThroughStop(std::string_view stop_name) const;
 
 		double GetActualDistanceBetweenStops(std::string_view from, std::string_view to) const;

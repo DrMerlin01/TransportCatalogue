@@ -2,6 +2,7 @@
 
 #include "domain.h"
 #include "json.h"
+#include "map_renderer.h"
 #include <istream>
 #include <optional>
 
@@ -16,9 +17,13 @@ namespace transport_catalogue {
 
 		json::Node CreateBusNode(const std::optional<response::Bus> bus, const int id) const;
 
+		json::Node CreateMapNode(const svg::Document& document, const int id) const;
+
 		Requests GetInfoRequests() const;
 
 		ContentRequests GetContentRequests() const;
+
+		renderer::RenderSettings GetRendererSettings() const;
 
 	private:
 		json::Document document_;
@@ -26,5 +31,9 @@ namespace transport_catalogue {
 		request::Stop ReadStopFromJson(const json::Dict& content_stop) const;
 
 		request::Bus ReadBusFromJson(const json::Dict& content_bus) const;
+
+		svg::Point ParseOffset(const json::Node& node) const;
+
+		svg::Color ParseColor(const json::Node& node) const;
 	};
 }

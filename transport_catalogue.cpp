@@ -5,8 +5,8 @@
 
 using namespace std;
 
-namespace transport_catalogue {
-	void TransportCatalogue::AddBus(const string& name, const vector<string_view>& bus_stops, bool is_roundtrip) {
+namespace transport_catalogue {	
+	void TransportCatalogue::AddBus(const string& name, const vector<string_view>& bus_stops, bool is_roundtrip) {        
 		buses_.push_back({ move(name), is_roundtrip, bus_stops });
 		bus_by_name_[buses_.back().name] = &buses_.back();
 
@@ -26,7 +26,7 @@ namespace transport_catalogue {
 		if (from_stop == nullptr || to_stop == nullptr) {
 			return;
 		}
-
+		
 		stops_to_dist_[{from_stop, to_stop}] = distance;
 	}
 
@@ -78,6 +78,14 @@ namespace transport_catalogue {
 		}
 	}
 
+	const deque<domain::Stop> TransportCatalogue::GetStops() const {
+		return bus_stops_;
+	}
+
+	const deque<domain::Bus> TransportCatalogue::GetBuses() const {
+		return buses_;
+	}
+
 	set<string_view> TransportCatalogue::GetBusesThroughStop(string_view stop_name) const {
 		const auto it = buses_by_stop_name_.find(stop_name);
 		if (it != buses_by_stop_name_.end()) {
@@ -99,7 +107,7 @@ namespace transport_catalogue {
 		double geographic_lenght_route = 0.;
 
 		for (size_t i = 0; i < bus->stops.size() - 1; ++i) {
-			actual_lenght_route += GetActualDistanceBetweenStops(bus->stops[i], bus->stops[i + 1]);
+			actual_lenght_route += GetActualDistanceBetweenStops(bus->stops[i], bus->stops[i + 1]);  
 			geographic_lenght_route += GetGeographicDistanceBetweenStops(bus->stops[i], bus->stops[i + 1]);
 			if (seen_stops.count(bus->stops[i]) == 0) {
 				++count_uniq_stops;

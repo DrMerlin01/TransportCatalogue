@@ -4,7 +4,7 @@
 
 namespace json {
 	using namespace std;
-	
+
 	RenderContext::RenderContext(ostream& out)
 		: out(out) {
 	}
@@ -116,14 +116,14 @@ namespace json {
 			return Node(move(str));
 		}
 
-		Node LoadDict(std::istream& input) {
+		Node LoadDict(istream& input) {
 			Dict result;
 
 			for (char c; input >> c && c != '}';) {
 				if (c == ',') {
 					input >> c;
 				}
-				string key = LoadString(input).AsString();
+				const string key = LoadString(input).AsString();
 				input >> c;
 				result.insert({move(key), LoadNode(input)});
 			}
