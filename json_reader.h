@@ -1,17 +1,24 @@
 #pragma once
 
-#include "domain.h"
 #include "json.h"
+#include "domain.h"
 #include "map_renderer.h"
+#include "transport_catalogue.h"
 #include <istream>
 #include <optional>
 
 namespace transport_catalogue {
 	class JsonReader {
 	public:
-		JsonReader(std::istream& in);
+		JsonReader(TransportCatalogue& db, std::istream& in);
+
+		void FillingCatalogue();
+
+		renderer::RenderSettings GetRendererSettings() const;
 
 		json::Document GetDocument(const json::Array& responses) const;
+
+		Requests GetInfoRequests() const;
 
 		json::Node CreateStopNode(const std::optional<response::Stop> stop, const int id) const;
 
@@ -19,14 +26,15 @@ namespace transport_catalogue {
 
 		json::Node CreateMapNode(const svg::Document& document, const int id) const;
 
-		Requests GetInfoRequests() const;
-
-		ContentRequests GetContentRequests() const;
-
-		renderer::RenderSettings GetRendererSettings() const;
-
 	private:
+		TransportCatalogue& db_;
 		json::Document document_;
+
+		void AddStop(const request::Stop& stop);
+
+		void AddBus(const request::Bus& bus);
+
+		void SetDistanceBetweenStops(const request::Stop& stop);
 
 		request::Stop ReadStopFromJson(const json::Dict& content_stop) const;
 

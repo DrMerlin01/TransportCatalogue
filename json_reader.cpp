@@ -7,12 +7,112 @@ namespace transport_catalogue {
 	using namespace std;
 	using namespace std::literals;
 
-	JsonReader::JsonReader(istream& in) 
-		: document_(json::Load(in)) {
+	JsonReader::JsonReader(TransportCatalogue& db, istream& in) 
+		: db_(db)
+		, document_(json::Load(in)) {
+	}
+
+	void JsonReader::FillingCatalogue() {
+		vector<request::Stop> stops;
+		vector<request::Bus> buses;
+		const json::Array& base_requests = document_.GetRoot().AsMap().at("base_requests"s).AsArray();
+
+		for (const json::Node& request : base_requests) {
+			const json::Dict& content = request.AsMap();
+			if (content.at("type"s).AsString() == "Stop"s) {
+				stops.push_back(move(ReadStopFromJson(content)));
+				AddStop(stops.back());
+			} else {
+				buses.push_back(move(ReadBusFromJson(content)));
+			}
+		}
+		for(const auto& stop : stops) {
+			SetDistanceBetweenStops(stop);
+		}
+		for(const auto& bus : buses) {
+			AddBus(bus);
+		}
+	}
+
+	void JsonReader::AddStop(const request::Stop& stop) {
+		db_.AddStop(stop.name, stop.coordinates);
+	}
+
+	void JsonReader::AddBus(const request::Bus& bus) {
+		vector<string_view> bus_stops;
+		
+		for(const auto& stop_name: bus.bus_stops) {
+			bus_stops.push_back(db_.GetStop(stop_name)->name);
+		}
+		db_.AddBus(bus.name, bus_stops, bus.is_roundtrip);
+	}
+
+	void JsonReader::SetDistanceBetweenStops(const request::Stop& stop) {
+		for(const auto [stop_to, distance] : stop.stop_to_dist) {
+			db_.SetDistanceBetweenStops(stop.name, stop_to, distance);
+		}
 	}
 
 	json::Document JsonReader::GetDocument(const json::Array& responses) const {
 		return json::Document(responses);
+	}
+
+	request::Stop JsonReader::ReadStopFromJson(const json::Dict& content_stop) const {
+		request::Stop stop;
+		
+		stop.type = "Stop"s;
+		stop.name = content_stop.at("name"s).AsString();
+		stop.coordinates = {content_stop.at("latitude"s).AsDouble(), content_stop.at("longitude"s).AsDouble()};
+		if(content_stop.find("road_distances"s) != content_stop.end()) {
+			for(const auto& [stop_to, distance] : content_stop.at("road_distances"s).AsMap()) {
+				stop.stop_to_dist.insert({ stop_to, distance.AsInt() });
+			}
+		}
+
+		return stop;
+	}
+
+	request::Bus JsonReader::ReadBusFromJson(const json::Dict& content_bus) const {
+		request::Bus bus;
+		
+		bus.type = "Bus"s;
+		bus.name = content_bus.at("name"s).AsString();
+		bus.is_roundtrip = content_bus.at("is_roundtrip"s).AsBool();
+		for(const json::Node& stop : content_bus.at("stops"s).AsArray()) {
+			bus.bus_stops.push_back(stop.AsString());
+		}
+		if(!bus.is_roundtrip) {
+			for (int i = bus.bus_stops.size() - 2; i >= 0; --i) {
+				bus.bus_stops.push_back(bus.bus_stops[i]);
+			}
+		}
+		
+		return bus;
+	}
+
+	renderer::RenderSettings JsonReader::GetRendererSettings() const {
+		renderer::RenderSettings settings;
+		const json::Dict& render_settings = document_.GetRoot().AsMap().at("render_settings"s).AsMap();
+
+		settings.width = render_settings.at("width"s).AsDouble();
+		settings.height = render_settings.at("height"s).AsDouble();
+		settings.padding = render_settings.at("padding"s).AsDouble();
+		settings.line_width = render_settings.at("line_width"s).AsDouble();
+		settings.stop_radius = render_settings.at("stop_radius"s).AsDouble();
+		settings.bus_label_font_size = render_settings.at("bus_label_font_size"s).AsInt();
+		settings.bus_label_offset = ParseOffset(render_settings.at("bus_label_offset"s));
+		settings.stop_label_font_size = render_settings.at("stop_label_font_size"s).AsInt();
+		settings.stop_label_offset = ParseOffset(render_settings.at("stop_label_offset"));
+		settings.underlayer_color = ParseColor(render_settings.at("underlayer_color"s));
+		settings.underlayer_width = render_settings.at("underlayer_width"s).AsDouble();
+
+		const json::Node& color_palette_node = render_settings.at("color_palette"s);
+		settings.color_palette.reserve(color_palette_node.AsArray().size());
+		for (const auto& node : color_palette_node.AsArray()) {
+			settings.color_palette.push_back(ParseColor(node));
+		}
+
+		return settings;
 	}
 
 	Requests JsonReader::GetInfoRequests() const {
@@ -61,23 +161,6 @@ namespace transport_catalogue {
 		}
 	}
 
-	ContentRequests JsonReader::GetContentRequests() const {
-		vector<request::Stop> stops;
-		vector<request::Bus> buses;
-		const json::Array& base_requests = document_.GetRoot().AsMap().at("base_requests"s).AsArray();
-
-		for (const json::Node& request : base_requests) {
-			const json::Dict& content = request.AsMap();
-			if (content.at("type"s).AsString() == "Stop"s) {
-				stops.push_back(move(ReadStopFromJson(content)));
-			} else {
-				buses.push_back(move(ReadBusFromJson(content)));
-			}
-		}
-
-		return { move(stops), move(buses) };
-	}
-
 	svg::Point JsonReader::ParseOffset(const json::Node& node) const {
 		const json::Array& array = node.AsArray();
 		const json::Node& dx = array[0];
@@ -114,93 +197,9 @@ namespace transport_catalogue {
 
 	json::Node JsonReader::CreateMapNode(const svg::Document& document, const int id) const {
 		stringstream out;
-		document.Render(out);
-		return { json::Dict{{ "request_id"s, id }, { "map"s, out.str() }} };
-	}
-
-	renderer::RenderSettings JsonReader::GetRendererSettings() const {
-		const json::Dict& render_settings = document_.GetRoot().AsMap().at("render_settings"s).AsMap();
-
-		const json::Node& width_node = render_settings.at("width"s);
-		const double width = width_node.AsDouble();
-
-		const json::Node& height_node = render_settings.at("height"s);
-		const double height = height_node.AsDouble();
-
-		const json::Node& padding_node = render_settings.at("padding"s);
-		const double padding = padding_node.AsDouble();
-
-		const json::Node& line_width_node = render_settings.at("line_width"s);
-		const double line_width = line_width_node.AsDouble();
-
-		const json::Node& stop_radius_node = render_settings.at("stop_radius"s);
-		const double stop_radius = stop_radius_node.AsDouble();
-
-		const json::Node& bus_label_font_size_node = render_settings.at("bus_label_font_size"s);
-		const uint32_t bus_label_font_size = bus_label_font_size_node.AsInt();
-
-		const svg::Point bus_label_offset = ParseOffset(render_settings.at("bus_label_offset"s));
-
-		const json::Node& stop_label_font_size_node = render_settings.at("stop_label_font_size"s);
-		const uint32_t stop_label_font_size = stop_label_font_size_node.AsInt();
-
-		const svg::Point stop_label_offset = ParseOffset(render_settings.at("stop_label_offset"));
-
-		const svg::Color underlayer_color = ParseColor(render_settings.at("underlayer_color"s));
-
-		const json::Node& underlayer_width_node = render_settings.at("underlayer_width"s);
-		const double underlayer_width = underlayer_width_node.AsDouble();
-
-		const json::Node& color_palette_node = render_settings.at("color_palette"s);
-		vector<svg::Color> color_palette;
-		color_palette.reserve(color_palette_node.AsArray().size());
-		for (const auto& node : color_palette_node.AsArray()) {
-			color_palette.push_back(ParseColor(node));
-		}
-
-		return { width, 
-				 height, 
-				 padding, 
-				 line_width, 
-				 stop_radius, 
-				 bus_label_font_size, 
-				 bus_label_offset, 
-				 stop_label_font_size, 
-				 stop_label_offset, 
-				 underlayer_color, 
-				 underlayer_width, 
-				 color_palette
-				};
-	}
-
-	request::Stop JsonReader::ReadStopFromJson(const json::Dict& content_stop) const {
-		request::Stop stop;
-		stop.type = "Stop"s;
-		stop.name = content_stop.at("name"s).AsString();
-		stop.coordinates = {content_stop.at("latitude"s).AsDouble(), content_stop.at("longitude"s).AsDouble()};
-		if(content_stop.find("road_distances"s) != content_stop.end()) {
-			for(const auto& [stop_to, distance] : content_stop.at("road_distances"s).AsMap()) {
-				stop.stop_to_dist.insert({ stop_to, distance.AsInt() });
-			}
-		}
-
-		return stop;
-	}
-
-	request::Bus JsonReader::ReadBusFromJson(const json::Dict& content_bus) const {
-		request::Bus bus;
-		bus.type = "Bus"s;
-		bus.name = content_bus.at("name"s).AsString();
-		bus.is_roundtrip = content_bus.at("is_roundtrip"s).AsBool();
-		for(const json::Node& stop : content_bus.at("stops"s).AsArray()) {
-			bus.bus_stops.push_back(stop.AsString());
-		}
-		if(!bus.is_roundtrip) {
-			for (int i = bus.bus_stops.size() - 2; i >= 0; --i) {
-				bus.bus_stops.push_back(bus.bus_stops[i]);
-			}
-		}
 		
-		return bus;
+		document.Render(out);
+		
+		return { json::Dict{{ "request_id"s, id }, { "map"s, out.str() }} };
 	}
 }

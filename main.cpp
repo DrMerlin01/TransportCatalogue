@@ -7,14 +7,18 @@
 using namespace std;
 using namespace transport_catalogue;
 using namespace json;
+using namespace renderer;
 
 int main() {
 	TransportCatalogue catalogue;
 
-	JsonReader json_reader(cin);
+	JsonReader json_reader(catalogue, cin);
+	json_reader.FillingCatalogue();
 
-	RequestHandler request_handler(catalogue);
-	request_handler.FillingCatalogue(json_reader.GetContentRequests());
+	RenderSettings render_settings = json_reader.GetRendererSettings();
+	MapRenderer renderer(render_settings);
+	
+	RequestHandler request_handler(catalogue, renderer);
 
 	Requests requests = json_reader.GetInfoRequests();
 
@@ -26,9 +30,7 @@ int main() {
 		} else if (request.type == "Bus"s) {
 			responses.push_back(json_reader.CreateBusNode(request_handler.GetBusResponse(request.name), request.id));
 		} else if (request.type == "Map"s) {
-			renderer::RenderSettings render_settings = json_reader.GetRendererSettings();
-			renderer::MapRenderer renderer(render_settings);
-			responses.push_back(json_reader.CreateMapNode(request_handler.RenderMap(renderer), request.id));
+			responses.push_back(json_reader.CreateMapNode(request_handler.RenderMap(), request.id));
 		} else {
 			// unknown request
 		}

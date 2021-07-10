@@ -82,10 +82,5 @@ namespace transport_catalogue {
 		};
 	}
 
-	struct ContentRequests {
-		std::vector<request::Stop> stops;
-		std::vector<request::Bus> buses;
-	};
-
 	using Requests = std::vector<request::Identification>;
 }

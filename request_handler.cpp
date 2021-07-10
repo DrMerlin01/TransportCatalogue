@@ -3,20 +3,9 @@
 namespace transport_catalogue {
 	using namespace std;
 
-	RequestHandler::RequestHandler(TransportCatalogue& db) 
-		: db_(db) {
-	}
-
-	void RequestHandler::FillingCatalogue(const ContentRequests& base_requests) {
-		for(const auto& stop : base_requests.stops) {
-			AddStop(stop);
-		}
-		for(const auto& stop : base_requests.stops) {
-			SetDistanceBetweenStops(stop);
-		}
-		for(const auto& bus : base_requests.buses) {
-			AddBus(bus);
-		}
+	RequestHandler::RequestHandler(TransportCatalogue& db, renderer::MapRenderer& renderer) 
+		: db_(db)
+		, renderer_(renderer) {
 	}
 
 	optional<response::Stop> RequestHandler::GetStopResponse(const string_view& stop_name) const {
@@ -37,77 +26,59 @@ namespace transport_catalogue {
 		}
 	}
 
-	void RequestHandler::AddStop(const request::Stop& stop) {
-		db_.AddStop(stop.name, stop.coordinates);
-	}
-
-	void RequestHandler::AddBus(const request::Bus& bus) {
-		vector<string_view> bus_stops;
-		for(const auto& stop_name: bus.bus_stops) {
-			bus_stops.push_back(db_.GetStop(stop_name)->name);
-		}
-		db_.AddBus(bus.name, bus_stops, bus.is_roundtrip);
-	}
-
-	void RequestHandler::SetDistanceBetweenStops(const request::Stop& stop) {
-		for(const auto [stop_to, distance] : stop.stop_to_dist) {
-			db_.SetDistanceBetweenStops(stop.name, stop_to, distance);
-		}
-	}
-
-	svg::Document RequestHandler::RenderMap(const renderer::MapRenderer& renderer) const {
+	svg::Document RequestHandler::RenderMap() const {
 		svg::Document document;
 
 		const vector<domain::Bus> buses = GetNonEmptyBuses();
 		const vector<domain::Stop> stops = GetStopsOnRoutes(buses);
 		const vector<geo::Coordinates> stop_coords = GetStopsCoordsOnRoutes(stops);
 
-		const renderer::RenderSettings& settings = renderer.GetRenderSettings();
+		const renderer::RenderSettings& settings = renderer_.GetRenderSettings();
 		const renderer::SphereProjector projector{ stop_coords.begin(), stop_coords.end(), settings.width, settings.height, settings.padding };
 		const vector<svg::Color>& colors = settings.color_palette;
 
 		const auto route_to_projectored_points = GetRouteToProjectoredPoints(buses, projector);
 
-		RenderRoute(document, route_to_projectored_points, colors, renderer);
-		RenderRouteName(document, route_to_projectored_points, colors, renderer);
-		RenderStopCircles(document, stops, projector, renderer);
-		RenderStopNames(document, stops, projector, renderer);
+		RenderRoute(document, route_to_projectored_points, colors);
+		RenderRouteName(document, route_to_projectored_points, colors);
+		RenderStopCircles(document, stops, projector);
+		RenderStopNames(document, stops, projector);
 
 		return document;
 	}
 
-	void RequestHandler::RenderRoute(svg::Document& document, const map<domain::Bus, vector<svg::Point>>& route_to_projectored_points, const vector<svg::Color>& colors, const renderer::MapRenderer& renderer) const {
+	void RequestHandler::RenderRoute(svg::Document& document, const map<domain::Bus, vector<svg::Point>>& route_to_projectored_points, const vector<svg::Color>& colors) const {
 		size_t i = 0;
 
 		for (const auto& [bus, stop_points] : route_to_projectored_points) {
-			renderer.RenderRoute(document, stop_points, colors[i % colors.size()]);
+			renderer_.RenderRoute(document, stop_points, colors[i % colors.size()]);
 			++i;
 		}
 	}
 
-	void RequestHandler::RenderRouteName(svg::Document& document, const std::map<domain::Bus, std::vector<svg::Point>>& route_to_projectored_points, const std::vector<svg::Color>& colors, const renderer::MapRenderer& renderer) const {
+	void RequestHandler::RenderRouteName(svg::Document& document, const std::map<domain::Bus, std::vector<svg::Point>>& route_to_projectored_points, const std::vector<svg::Color>& colors) const {
 		size_t i = 0;
 
 		for (const auto& [bus, stops_points] : route_to_projectored_points) {
-			renderer.RenderRouteName(document, stops_points.front(), colors[i % colors.size()], bus.name);
+			renderer_.RenderRouteName(document, stops_points.front(), colors[i % colors.size()], bus.name);
 			if (!bus.is_roundtrip && bus.stops.front() != bus.stops[bus.stops.size() / 2]) {
-				renderer.RenderRouteName(document, stops_points[bus.stops.size() / 2], colors[i % colors.size()], bus.name);
+				renderer_.RenderRouteName(document, stops_points[bus.stops.size() / 2], colors[i % colors.size()], bus.name);
 			}
 			++i;
 		}
 	}
 
-	void RequestHandler::RenderStopCircles(svg::Document& document, const std::vector<domain::Stop>& stops, const renderer::SphereProjector& projector, const renderer::MapRenderer& renderer) const {
+	void RequestHandler::RenderStopCircles(svg::Document& document, const std::vector<domain::Stop>& stops, const renderer::SphereProjector& projector) const {
 		for (const domain::Stop& stop : stops) {
 			const svg::Point projected_point = projector(stop.coordinates);
-			renderer.RenderStopCircle(document, projected_point);
+			renderer_.RenderStopCircle(document, projected_point);
 		}
 	}
 
-	void RequestHandler::RenderStopNames(svg::Document& document, const std::vector<domain::Stop>& stops, const renderer::SphereProjector& projector, const renderer::MapRenderer& renderer) const {
+	void RequestHandler::RenderStopNames(svg::Document& document, const std::vector<domain::Stop>& stops, const renderer::SphereProjector& projector) const {
 		for (const domain::Stop& stop : stops) {
 			const svg::Point projected_point = projector(stop.coordinates);
-			renderer.RenderStopName(document, projected_point, stop.name);
+			renderer_.RenderStopName(document, projected_point, stop.name);
 		}
 	} 
 
