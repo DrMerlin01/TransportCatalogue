@@ -14,6 +14,11 @@ namespace transport_catalogue {
 
 		svg::Document RenderMap() const;
 
+	private:
+		// RequestHandler использует агрегацию объектов "Транспортный Справочник" и "Визуализатор Карты"
+		TransportCatalogue& db_;
+		renderer::MapRenderer& renderer_;
+		
 		void RenderRoute(svg::Document& document, const std::map<domain::Bus, std::vector<svg::Point>>& route_to_projectored_points, const std::vector<svg::Color>& colors) const;
 
 		void RenderRouteName(svg::Document& document, const std::map<domain::Bus, std::vector<svg::Point>>& route_to_projectored_points, const std::vector<svg::Color>& colors) const;
@@ -21,11 +26,6 @@ namespace transport_catalogue {
 		void RenderStopCircles(svg::Document& document, const std::vector<domain::Stop>& stops, const renderer::SphereProjector& projector) const;
 
 		void RenderStopNames(svg::Document& document, const std::vector<domain::Stop>& stops, const renderer::SphereProjector& projector) const;
-
-	private:
-		// RequestHandler использует агрегацию объектов "Транспортный Справочник" и "Визуализатор Карты"
-		TransportCatalogue& db_;
-		renderer::MapRenderer& renderer_;
 
 		std::vector<domain::Bus> GetNonEmptyBuses() const;
 
