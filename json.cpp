@@ -337,14 +337,14 @@ namespace json {
 		return get<Array>(*this);
 	}
 
-	bool Node::IsMap() const {
+	bool Node::IsDict() const {
 		return holds_alternative<Dict>(*this);
 	}
 
-	const Dict& Node::AsMap() const {
+	const Dict& Node::AsDict() const {
 		using namespace literals;
 
-		if (!IsMap()) {
+		if (!IsDict()) {
 			throw logic_error("Not a dictionary."s);
 		}
 
@@ -411,6 +411,10 @@ namespace json {
 
 	bool Node::operator==(const Node& rhs) const {
 		return GetValue() == rhs.GetValue();
+	}
+
+	Node::Value& Node::GetValue() {
+		return *this;
 	}
 
 	const Node::Value& Node::GetValue() const {

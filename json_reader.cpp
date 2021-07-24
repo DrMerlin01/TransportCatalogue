@@ -15,10 +15,10 @@ namespace transport_catalogue {
 	void JsonReader::FillingCatalogue() {
 		vector<request::Stop> stops;
 		vector<request::Bus> buses;
-		const json::Array& base_requests = document_.GetRoot().AsMap().at("base_requests"s).AsArray();
+		const json::Array& base_requests = document_.GetRoot().AsDict().at("base_requests"s).AsArray();
 
 		for (const json::Node& request : base_requests) {
-			const json::Dict& content = request.AsMap();
+			const json::Dict& content = request.AsDict();
 			if (content.at("type"s).AsString() == "Stop"s) {
 				stops.push_back(move(ReadStopFromJson(content)));
 				AddStop(stops.back());
@@ -64,7 +64,7 @@ namespace transport_catalogue {
 		stop.name = content_stop.at("name"s).AsString();
 		stop.coordinates = {content_stop.at("latitude"s).AsDouble(), content_stop.at("longitude"s).AsDouble()};
 		if(content_stop.find("road_distances"s) != content_stop.end()) {
-			for(const auto& [stop_to, distance] : content_stop.at("road_distances"s).AsMap()) {
+			for(const auto& [stop_to, distance] : content_stop.at("road_distances"s).AsDict()) {
 				stop.stop_to_dist.insert({ stop_to, distance.AsInt() });
 			}
 		}
@@ -92,7 +92,7 @@ namespace transport_catalogue {
 
 	renderer::RenderSettings JsonReader::GetRendererSettings() const {
 		renderer::RenderSettings settings;
-		const json::Dict& render_settings = document_.GetRoot().AsMap().at("render_settings"s).AsMap();
+		const json::Dict& render_settings = document_.GetRoot().AsDict().at("render_settings"s).AsDict();
 
 		settings.width = render_settings.at("width"s).AsDouble();
 		settings.height = render_settings.at("height"s).AsDouble();
@@ -117,11 +117,11 @@ namespace transport_catalogue {
 
 	Requests JsonReader::GetInfoRequests() const {
 		Requests ids;
-		const json::Array& stat_requests = document_.GetRoot().AsMap().at("stat_requests"s).AsArray();
+		const json::Array& stat_requests = document_.GetRoot().AsDict().at("stat_requests"s).AsArray();
 		ids.reserve(stat_requests.size());
 
 		for(const json::Node& request : stat_requests) {
-			const json::Dict& content = request.AsMap();
+			const json::Dict& content = request.AsDict();
 
 			request::Identification identification;
 			identification.id = content.at("id"s).AsInt();
@@ -143,21 +143,40 @@ namespace transport_catalogue {
 				buses_on_stop.push_back(json::Node{string{stop}});
 			}
 
-			return { json::Dict{{ "request_id"s, id }, { "buses"s, buses_on_stop }} };
+			return json::Builder{}
+						.StartDict()
+							.Key("request_id"s).Value(id)
+							.Key("buses"s).Value(buses_on_stop)
+						.EndDict()
+					.Build();
 		} else {
-			return { json::Dict{{ "request_id"s, id }, { "error_message"s, json::Node{string("not found"s)} }} };
+			return json::Builder{}
+						.StartDict()
+							.Key("request_id"s).Value(id)
+							.Key("error_message"s).Value("not found"s)
+						.EndDict()
+					.Build();
 		}
 	}
 
 	json::Node JsonReader::CreateBusNode(const optional<response::Bus> bus, const int id) const {
 		if(bus.has_value()) {
-			return { json::Dict{{ "request_id"s, id },
-								{ "curvature"s, bus.value().info.curvature },
-								{ "route_length"s, bus.value().info.lenght_route },
-								{ "stop_count"s, static_cast<int>(bus.value().info.total_bus_stops)},
-								{ "unique_stop_count"s, static_cast<int>(bus.value().info.unique_bus_stops) }}};
+			return json::Builder{}
+						.StartDict()
+							.Key("request_id"s).Value(id)
+							.Key("curvature"s).Value(bus.value().info.curvature)
+							.Key("route_length"s).Value(bus.value().info.lenght_route)
+							.Key("stop_count"s).Value(static_cast<int>(bus.value().info.total_bus_stops))
+							.Key("unique_stop_count"s).Value(static_cast<int>(bus.value().info.unique_bus_stops))
+						.EndDict()
+					.Build();
 		} else {
-			return { json::Dict{{ "request_id"s, id }, { "error_message"s, json::Node{string("not found"s)} }} };
+			return json::Builder{}
+						.StartDict()
+							.Key("request_id"s).Value(id)
+							.Key("error_message"s).Value("not found"s)
+						.EndDict()
+					.Build();
 		}
 	}
 
@@ -191,15 +210,20 @@ namespace transport_catalogue {
 		} else {
 			return node.AsString();
 		}
-		
+
 		return {};
 	}
 
 	json::Node JsonReader::CreateMapNode(const svg::Document& document, const int id) const {
 		stringstream out;
-		
+
 		document.Render(out);
-		
-		return { json::Dict{{ "request_id"s, id }, { "map"s, out.str() }} };
+
+		return json::Builder{}
+					.StartDict()
+						.Key("request_id"s).Value(id)
+						.Key("map"s).Value(out.str())
+					.EndDict()
+				.Build();
 	}
 }

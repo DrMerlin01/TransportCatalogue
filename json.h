@@ -42,9 +42,9 @@ namespace json {
 
 		const Array& AsArray() const;
 
-		bool IsMap() const;
+		bool IsDict() const;
 
-		const Dict& AsMap() const;
+		const Dict& AsDict() const;
 
 		bool IsBool() const;
 
@@ -63,6 +63,8 @@ namespace json {
 		bool IsString() const;
 
 		const std::string& AsString() const;
+		
+		Value& GetValue();
 
 		const Value& GetValue() const;
 
