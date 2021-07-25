@@ -83,7 +83,7 @@ namespace transport_catalogue {
 			bus.bus_stops.push_back(stop.AsString());
 		}
 		if(!bus.is_roundtrip) {
-			for (int i = bus.bus_stops.size() - 2; i >= 0; --i) {
+			for (int i = bus.bus_stops.size() - 2U; i >= 0U; --i) {
 				bus.bus_stops.push_back(bus.bus_stops[i]);
 			}
 		}
@@ -202,9 +202,9 @@ namespace transport_catalogue {
 			const json::Node& blue_node = array[2];
 			const uint8_t blue = static_cast<uint8_t>(blue_node.AsInt());
 
-			if (array.size() == 3) {
+			if (array.size() == 3U) {
 				return svg::Rgb{ red, green, blue };
-			} else if (array.size() == 4) {
+			} else if (array.size() == 4U) {
 				const json::Node& opacity = array[3];
 				return svg::Rgba{ red, green, blue, opacity.AsDouble() };
 			}
