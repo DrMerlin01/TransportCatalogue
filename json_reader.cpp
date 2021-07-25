@@ -1,4 +1,5 @@
 #include "json_reader.h"
+#include "json_builder.h"
 #include <sstream>
 #include <utility>
 #include <vector>
@@ -40,7 +41,7 @@ namespace transport_catalogue {
 
 	void JsonReader::AddBus(const request::Bus& bus) {
 		vector<string_view> bus_stops;
-		
+
 		for(const auto& stop_name: bus.bus_stops) {
 			bus_stops.push_back(db_.GetStop(stop_name)->name);
 		}
@@ -59,7 +60,7 @@ namespace transport_catalogue {
 
 	request::Stop JsonReader::ReadStopFromJson(const json::Dict& content_stop) const {
 		request::Stop stop;
-		
+
 		stop.type = "Stop"s;
 		stop.name = content_stop.at("name"s).AsString();
 		stop.coordinates = {content_stop.at("latitude"s).AsDouble(), content_stop.at("longitude"s).AsDouble()};
@@ -74,7 +75,7 @@ namespace transport_catalogue {
 
 	request::Bus JsonReader::ReadBusFromJson(const json::Dict& content_bus) const {
 		request::Bus bus;
-		
+
 		bus.type = "Bus"s;
 		bus.name = content_bus.at("name"s).AsString();
 		bus.is_roundtrip = content_bus.at("is_roundtrip"s).AsBool();
@@ -86,7 +87,7 @@ namespace transport_catalogue {
 				bus.bus_stops.push_back(bus.bus_stops[i]);
 			}
 		}
-		
+
 		return bus;
 	}
 
