@@ -64,8 +64,6 @@ namespace json {
 
 		KeyContext Key(std::string key);
 
-		Node* AddItem(Node::Value value);
-
 		Builder& Value(Node::Value value);
 
 		DictItemContext StartDict();
@@ -80,5 +78,7 @@ namespace json {
 		Node root_;
 		std::optional<std::string> key_;
 		std::vector<Node*> nodes_stack_;
+		
+		Node* AddItem(Node::Value value);
 	};
 }
