@@ -3,12 +3,13 @@
 namespace transport_catalogue {
 	using namespace std;
 
-	RequestHandler::RequestHandler(TransportCatalogue& db, renderer::MapRenderer& renderer) 
+	RequestHandler::RequestHandler(TransportCatalogue& db, renderer::MapRenderer& renderer, transport_router::TransportRouter& router) 
 		: db_(db)
-		, renderer_(renderer) {
+		, renderer_(renderer)
+		, router_(router) {
 	}
 
-	optional<response::Stop> RequestHandler::GetStopResponse(const string_view& stop_name) const {
+	optional<response::Stop> RequestHandler::GetStopResponse(const string_view stop_name) const {
 		const domain::Stop* stop_from_db = db_.GetStop(stop_name);
 		if (stop_from_db != nullptr) {
 			return response::Stop{stop_from_db->name, db_.GetBusesThroughStop(stop_name)};
@@ -17,7 +18,7 @@ namespace transport_catalogue {
 		}
 	}
 
-	optional<response::Bus> RequestHandler::GetBusResponse(const string_view& bus_name) const {
+	optional<response::Bus> RequestHandler::GetBusResponse(const string_view bus_name) const {
 		const domain::Bus* bus_from_db = db_.GetBus(bus_name);
 		if (bus_from_db != nullptr) {
 			return response::Bus{bus_from_db->name, db_.GetInfoOnRoute(bus_name)};
@@ -45,6 +46,10 @@ namespace transport_catalogue {
 		RenderStopNames(document, stops, projector);
 
 		return document;
+	}
+	
+	std::optional<response::Route> RequestHandler::GetRouteResponse(const std::string_view from, const std::string_view to) const {
+		return router_.GetRouteResponse(from, to);
 	}
 
 	void RequestHandler::RenderRoute(svg::Document& document, const map<domain::Bus, vector<svg::Point>>& route_to_projectored_points, const vector<svg::Color>& colors) const {

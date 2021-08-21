@@ -4,17 +4,20 @@
 #include "domain.h"
 #include "map_renderer.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 #include <istream>
 #include <optional>
 
 namespace transport_catalogue {
 	class JsonReader {
 	public:
-		JsonReader(TransportCatalogue& db, std::istream& in);
+		JsonReader(TransportCatalogue& db, transport_router::TransportRouter& tr, std::istream& in);
 
 		void FillingCatalogue();
 
 		renderer::RenderSettings GetRendererSettings() const;
+
+		transport_router::RoutingSettings GetRoutingSettings() const;
 
 		json::Document GetDocument(const json::Array& responses) const;
 
@@ -26,8 +29,11 @@ namespace transport_catalogue {
 
 		json::Node CreateMapNode(const svg::Document& document, const int id) const;
 
+		json::Node CreateRouteNode(const std::optional<response::Route> route, const int id) const;
+
 	private:
 		TransportCatalogue& db_;
+		transport_router::TransportRouter& tr_;
 		json::Document document_;
 
 		void AddStop(const request::Stop& stop);

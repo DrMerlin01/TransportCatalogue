@@ -3,6 +3,7 @@
 #include <tuple>
 #include <string>
 #include <vector>
+#include <variant>
 #include <set>
 #include <string_view>
 #include <functional>
@@ -59,14 +60,34 @@ namespace transport_catalogue {
 			std::string_view name;
 			domain::InfoOnRoute info;
 		};
+
+		struct Wait final {
+			std::string type;
+			std::string stop_name;
+			int time;
+		};
+
+		struct Travel final {
+			std::string type;
+			std::string bus;
+			int span_count;
+			double time;
+		};
+
+		struct Route final {
+			double total_time;
+			std::vector<std::variant<Wait, Travel>> items;
+		};
 	}
 
 	namespace request {
 		struct Request {
 			std::string type;
 			std::string name;
+			std::string from;
+			std::string to;
 		};
-		
+
 		struct Identification final : Request {
 			int id;
 		};
@@ -80,6 +101,20 @@ namespace transport_catalogue {
 			bool is_roundtrip;
 			std::vector<std::string> bus_stops;
 		};
+	}
+
+	namespace route {
+		struct Road {
+			std::string name;
+			int span_count;
+			double minutes;
+		};
+
+		Road operator+(const Road& lhs, const Road& rhs);
+
+		bool operator<(const Road& lhs, const Road& rhs);
+
+		bool operator>(const Road& lhs, const Road& rhs);
 	}
 
 	using Requests = std::vector<request::Identification>;

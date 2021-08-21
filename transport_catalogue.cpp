@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace transport_catalogue {	
-	void TransportCatalogue::AddBus(const string& name, const vector<string_view>& bus_stops, bool is_roundtrip) {        
+	void TransportCatalogue::AddBus(const string& name, const vector<string_view>& bus_stops, bool is_roundtrip) {
 		buses_.push_back({ move(name), is_roundtrip, bus_stops });
 		bus_by_name_[buses_.back().name] = &buses_.back();
 
