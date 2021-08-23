@@ -39,37 +39,28 @@ namespace json {
 		bool IsNull() const;
 
 		bool IsArray() const;
-
 		const Array& AsArray() const;
 
 		bool IsDict() const;
-
 		const Dict& AsDict() const;
 
 		bool IsBool() const;
-
 		bool AsBool() const;
 
 		bool IsInt() const;
-
 		int AsInt() const;
 
 		bool IsPureDouble() const;
-
 		bool IsDouble() const;
-
 		double AsDouble() const;
 
 		bool IsString() const;
-
 		const std::string& AsString() const;
-		
-		Value& GetValue();
 
+		Value& GetValue();
 		const Value& GetValue() const;
 
 		bool operator==(const Node& rhs) const;
-
 		bool operator!=(const Node& rhs) const;
 	};
 

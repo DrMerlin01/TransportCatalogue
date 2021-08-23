@@ -35,7 +35,7 @@ namespace transport_catalogue {
 		const auto to_stop = GetStop(to);
 		if (from_stop == nullptr || to_stop == nullptr) {
 			return 0.;
-		}
+			}
 
 		auto stops_pair = stops_to_dist_.find({from_stop, to_stop});
 		if (stops_pair != stops_to_dist_.end()) {
@@ -84,6 +84,14 @@ namespace transport_catalogue {
 
 	const deque<domain::Bus> TransportCatalogue::GetBuses() const {
 		return buses_;
+	}
+
+	size_t TransportCatalogue::GetStopsCount() const {
+		return bus_stops_.size();
+	}
+
+	size_t TransportCatalogue::GetBusesCount() const {
+		return buses_.size();
 	}
 
 	set<string_view> TransportCatalogue::GetBusesThroughStop(string_view stop_name) const {

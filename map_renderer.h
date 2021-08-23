@@ -3,6 +3,7 @@
 #include "geo.h"
 #include "svg.h"
 #include "transport_catalogue.h"
+#include <string>
 #include <algorithm>
 #include <map>
 
@@ -83,21 +84,34 @@ namespace renderer {
 	public:
 		explicit MapRenderer() = default;
 
-		MapRenderer(const RenderSettings& settings);
+		MapRenderer(const transport_catalogue::TransportCatalogue& db, const RenderSettings& settings);
 
 		const RenderSettings& GetRenderSettings() const;
 
+		svg::Document RenderMap();
+
 		void RenderMap(svg::Document& document, const std::vector<svg::Point>& route_points, const svg::Color& color, const std::string& route_name, const svg::Point stop_point, const std::string& stop_name);
 
-		void RenderRoute(svg::Document& document, const std::vector<svg::Point>& points, const svg::Color& color) const;
+	private:
+		const transport_catalogue::TransportCatalogue& db_;
+		RenderSettings settings_;
+
+		std::vector<transport_catalogue::domain::Bus> GetNonEmptyBuses() const;
+
+		std::vector<transport_catalogue::domain::Stop> GetStopsOnRoutes(const std::vector<transport_catalogue::domain::Bus>& buses) const;
+
+		std::vector<geo::Coordinates> GetStopsCoordsOnRoutes(const std::vector<transport_catalogue::domain::Stop>& stops) const;
+
+		std::map<transport_catalogue::domain::Bus, std::vector<svg::Point>> GetRouteToProjectoredPoints(const std::vector<transport_catalogue::domain::Bus>& buses, const SphereProjector& projector) const;
+
+		void RenderRoutes(svg::Document& document, const std::map<transport_catalogue::domain::Bus, std::vector<svg::Point>>& route_to_projectored_points, const std::vector<svg::Color>& colors) const;
+
+		void RenderRouteNames(svg::Document& document, const std::map<transport_catalogue::domain::Bus, std::vector<svg::Point>>& route_to_projectored_points, const std::vector<svg::Color>& colors) const;
 
 		void RenderRouteName(svg::Document& document, const svg::Point point, const svg::Color& color, const std::string& route_name) const;
 
-		void RenderStopCircle(svg::Document& document, const svg::Point point) const;
+		void RenderStopCircles(svg::Document& document, const std::vector<transport_catalogue::domain::Stop>& stops, const SphereProjector& projector) const;
 
-		void RenderStopName(svg::Document& document, const svg::Point point, const std::string& stop_name) const;
-
-	private:
-		RenderSettings settings_;
+		void RenderStopNames(svg::Document& document, const std::vector<transport_catalogue::domain::Stop>& stops, const SphereProjector& projector) const;
 	};
 } // namespace renderer

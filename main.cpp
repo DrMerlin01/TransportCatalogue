@@ -14,13 +14,13 @@ using namespace transport_router;
 int main() {
 	TransportCatalogue catalogue;
 
-	TransportRouter router(catalogue);
-
-	JsonReader json_reader(catalogue, router, cin);
+	JsonReader json_reader(catalogue, cin);
 	json_reader.FillingCatalogue();
 
-	MapRenderer renderer(json_reader.GetRendererSettings());
-	
+	TransportRouter router(catalogue, json_reader.GetRoutingSettings(), catalogue.GetStopsCount() * 2);
+
+	MapRenderer renderer(catalogue, json_reader.GetRendererSettings());
+
 	RequestHandler request_handler(catalogue, renderer, router);
 
 	Requests requests = json_reader.GetInfoRequests();

@@ -8,9 +8,8 @@ namespace transport_catalogue {
 	using namespace std;
 	using namespace std::literals;
 
-	JsonReader::JsonReader(TransportCatalogue& db, transport_router::TransportRouter& tr, istream& in) 
+	JsonReader::JsonReader(TransportCatalogue& db, istream& in) 
 		: db_(db)
-		, tr_(tr)
 		, document_(json::Load(in)) {
 	}
 
@@ -36,9 +35,6 @@ namespace transport_catalogue {
 		for(const auto& bus : buses) {
 			AddBus(bus);
 		}
-
-		tr_.SetSettings(GetRoutingSettings());
-		tr_.CreateGraph();
 	}
 
 	void JsonReader::AddStop(const request::Stop& stop) {

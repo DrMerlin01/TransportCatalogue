@@ -11,7 +11,7 @@
 namespace transport_catalogue {
 	class JsonReader {
 	public:
-		JsonReader(TransportCatalogue& db, transport_router::TransportRouter& tr, std::istream& in);
+		JsonReader(TransportCatalogue& db, std::istream& in);
 
 		void FillingCatalogue();
 
@@ -33,7 +33,6 @@ namespace transport_catalogue {
 
 	private:
 		TransportCatalogue& db_;
-		transport_router::TransportRouter& tr_;
 		json::Document document_;
 
 		void AddStop(const request::Stop& stop);

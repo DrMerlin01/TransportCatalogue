@@ -22,21 +22,5 @@ namespace transport_catalogue {
 		TransportCatalogue& db_;
 		renderer::MapRenderer& renderer_;
 		transport_router::TransportRouter& router_;
-
-		void RenderRoute(svg::Document& document, const std::map<domain::Bus, std::vector<svg::Point>>& route_to_projectored_points, const std::vector<svg::Color>& colors) const;
-
-		void RenderRouteName(svg::Document& document, const std::map<domain::Bus, std::vector<svg::Point>>& route_to_projectored_points, const std::vector<svg::Color>& colors) const;
-
-		void RenderStopCircles(svg::Document& document, const std::vector<domain::Stop>& stops, const renderer::SphereProjector& projector) const;
-
-		void RenderStopNames(svg::Document& document, const std::vector<domain::Stop>& stops, const renderer::SphereProjector& projector) const;
-
-		std::vector<domain::Bus> GetNonEmptyBuses() const;
-
-		std::vector<domain::Stop> GetStopsOnRoutes(const std::vector<domain::Bus>& buses) const;
-
-		std::vector<geo::Coordinates> GetStopsCoordsOnRoutes(const std::vector<domain::Stop>& stops) const;
-
-		std::map<domain::Bus, std::vector<svg::Point>> GetRouteToProjectoredPoints(const std::vector<domain::Bus>& buses, const renderer::SphereProjector& projector) const;
 	};
 }

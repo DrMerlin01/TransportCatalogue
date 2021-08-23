@@ -3,16 +3,20 @@
 using namespace std;
 
 namespace transport_router {
-	TransportRouter::TransportRouter(const transport_catalogue::TransportCatalogue& db)
+	TransportRouter::TransportRouter(const transport_catalogue::TransportCatalogue& db, const RoutingSettings& settings, const size_t vertex_count)
 		: db_(db)
-		, graph_(450) {
+		, settings_(settings)
+		, graph_(vertex_count) {
+		CreateGraph();
 	}
 
-	void TransportRouter::CreateGraph() {
+	void TransportRouter::FillingGraphWithStops() {
 		for (const auto& stop : db_.GetStops()) {
 			AddEdgeGraph(stop);
 		}
+	}
 
+	void TransportRouter::FillingGraphWithBuses() {
 		for (const auto& bus : db_.GetBuses()) {
 			const auto& stops = bus.stops;
 			const string_view name = bus.name;
@@ -23,6 +27,11 @@ namespace transport_router {
 				AddEdgesGraph(next(stops.begin(), stops.size() / 2), stops.end(), name);
 			}
 		}
+	}
+
+	void TransportRouter::CreateGraph() {
+		FillingGraphWithStops();
+		FillingGraphWithBuses();
 
 		static graph::Router<transport_catalogue::route::Road> router(graph_);
 		router_ = make_unique<graph::Router<transport_catalogue::route::Road>>(router);
@@ -79,7 +88,6 @@ namespace transport_router {
 		if (name_id_.count(stop) != 0) {
 			return name_id_.at(stop);
 		}
-
 		const auto& [it, _] = names_.emplace(stop);
 		const graph::VertexId id = name_id_[*it] = name_id_.size();
 		id_name_[id] = *it;
