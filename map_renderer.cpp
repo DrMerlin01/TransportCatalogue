@@ -13,9 +13,12 @@ namespace renderer {
 		return { (coords.lng - min_lon_) * zoom_coeff_ + padding_, (max_lat_ - coords.lat) * zoom_coeff_ + padding_ };
 	}
 
-	MapRenderer::MapRenderer(const transport_catalogue::TransportCatalogue& db, const RenderSettings& settings) 
-		: db_(db)
-		, settings_(settings) {
+	MapRenderer::MapRenderer(const transport_catalogue::TransportCatalogue& db) 
+		: db_(db) {
+	}
+
+	void MapRenderer::SetRenderSettings(const RenderSettings& settings) {
+		settings_ = settings;
 	}
 
 	const RenderSettings& MapRenderer::GetRenderSettings() const {

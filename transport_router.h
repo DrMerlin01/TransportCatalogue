@@ -20,9 +20,11 @@ namespace transport_router {
 
 	class TransportRouter {
 	public:
-		TransportRouter(const transport_catalogue::TransportCatalogue& db, const RoutingSettings& settings, const size_t vertex_count);
+		TransportRouter(const transport_catalogue::TransportCatalogue& db);
 
 		void SetSettings(const RoutingSettings& settings);
+
+		void CreateRouter();
 
 		RoutingSettings GetSettings() const;
 
@@ -30,14 +32,12 @@ namespace transport_router {
 
 	private:
 		const transport_catalogue::TransportCatalogue& db_;
-		RoutingSettings settings_;
 		graph::DirectedWeightedGraph<transport_catalogue::route::Road> graph_;
+		RoutingSettings settings_;
 		std::unique_ptr<graph::Router<transport_catalogue::route::Road>> router_;
 		std::unordered_map<std::string_view, graph::VertexId> name_id_;
 		std::unordered_map<graph::VertexId, std::string_view> id_name_;
 		std::unordered_set<std::string> names_;
-
-		void CreateGraph();
 
 		void FillingGraphWithStops();
 

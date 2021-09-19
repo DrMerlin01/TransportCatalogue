@@ -1,7 +1,8 @@
 #include "request_handler.h"
 
+using namespace std;
+
 namespace transport_catalogue {
-	using namespace std;
 
 	RequestHandler::RequestHandler(TransportCatalogue& db, renderer::MapRenderer& renderer, transport_router::TransportRouter& router) 
 		: db_(db)

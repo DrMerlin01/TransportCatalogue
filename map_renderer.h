@@ -84,7 +84,9 @@ namespace renderer {
 	public:
 		explicit MapRenderer() = default;
 
-		MapRenderer(const transport_catalogue::TransportCatalogue& db, const RenderSettings& settings);
+		MapRenderer(const transport_catalogue::TransportCatalogue& db);
+
+		void SetRenderSettings(const RenderSettings& settings);
 
 		const RenderSettings& GetRenderSettings() const;
 

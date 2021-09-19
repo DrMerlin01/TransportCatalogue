@@ -15,11 +15,11 @@ namespace ranges {
 			: begin_(begin)
 			, end_(end) {
 		}
-		
+
 		It begin() const {
 			return begin_;
 		}
-		
+
 		It end() const {
 			return end_;
 		}

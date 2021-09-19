@@ -5,12 +5,16 @@
 #include "map_renderer.h"
 #include "transport_catalogue.h"
 #include "transport_router.h"
+#include "serialization.h"
 #include <istream>
 #include <optional>
+#include <filesystem>
 
 namespace transport_catalogue {
 	class JsonReader {
 	public:
+		using Path = std::filesystem::path;
+
 		JsonReader(TransportCatalogue& db, std::istream& in);
 
 		void FillingCatalogue();
@@ -18,6 +22,8 @@ namespace transport_catalogue {
 		renderer::RenderSettings GetRendererSettings() const;
 
 		transport_router::RoutingSettings GetRoutingSettings() const;
+
+		Path GetSerializationSettings() const;
 
 		json::Document GetDocument(const json::Array& responses) const;
 
@@ -27,7 +33,7 @@ namespace transport_catalogue {
 
 		json::Node CreateBusNode(const std::optional<response::Bus> bus, const int id) const;
 
-		json::Node CreateMapNode(const svg::Document& document, const int id) const;
+		json::Node CreateMapNode(const std::string& map, const int id) const;
 
 		json::Node CreateRouteNode(const std::optional<response::Route> route, const int id) const;
 

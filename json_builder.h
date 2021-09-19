@@ -78,7 +78,7 @@ namespace json {
 		Node root_;
 		std::optional<std::string> key_;
 		std::vector<Node*> nodes_stack_;
-		
+
 		Node* AddItem(Node::Value value);
 	};
 }

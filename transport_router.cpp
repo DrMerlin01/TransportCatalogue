@@ -3,11 +3,9 @@
 using namespace std;
 
 namespace transport_router {
-	TransportRouter::TransportRouter(const transport_catalogue::TransportCatalogue& db, const RoutingSettings& settings, const size_t vertex_count)
+	TransportRouter::TransportRouter(const transport_catalogue::TransportCatalogue& db)
 		: db_(db)
-		, settings_(settings)
-		, graph_(vertex_count) {
-		CreateGraph();
+		, graph_(500) {
 	}
 
 	void TransportRouter::FillingGraphWithStops() {
@@ -29,7 +27,7 @@ namespace transport_router {
 		}
 	}
 
-	void TransportRouter::CreateGraph() {
+	void TransportRouter::CreateRouter() {
 		FillingGraphWithStops();
 		FillingGraphWithBuses();
 

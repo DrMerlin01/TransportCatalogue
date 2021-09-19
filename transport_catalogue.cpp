@@ -26,7 +26,7 @@ namespace transport_catalogue {
 		if (from_stop == nullptr || to_stop == nullptr) {
 			return;
 		}
-		
+
 		stops_to_dist_[{from_stop, to_stop}] = distance;
 	}
 
@@ -35,7 +35,7 @@ namespace transport_catalogue {
 		const auto to_stop = GetStop(to);
 		if (from_stop == nullptr || to_stop == nullptr) {
 			return 0.;
-			}
+		}
 
 		auto stops_pair = stops_to_dist_.find({from_stop, to_stop});
 		if (stops_pair != stops_to_dist_.end()) {
@@ -92,6 +92,10 @@ namespace transport_catalogue {
 
 	size_t TransportCatalogue::GetBusesCount() const {
 		return buses_.size();
+	}
+
+	const unordered_map<pair<const domain::Stop*, const domain::Stop*>, double, domain::StopsPairHasher>& TransportCatalogue::GetStopsDistance() const {
+		return stops_to_dist_;
 	}
 
 	set<string_view> TransportCatalogue::GetBusesThroughStop(string_view stop_name) const {

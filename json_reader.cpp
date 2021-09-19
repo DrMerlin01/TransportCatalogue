@@ -127,6 +127,15 @@ namespace transport_catalogue {
 
 		return settings;
 	}
+	
+	JsonReader::Path JsonReader::GetSerializationSettings() const {
+		Path path;
+		const json::Dict& serialization_settings = document_.GetRoot().AsDict().at("serialization_settings").AsDict();
+
+		path = serialization_settings.at("file").AsString();
+
+		return path;
+	}
 
 	Requests JsonReader::GetInfoRequests() const {
 		Requests ids;
@@ -233,19 +242,15 @@ namespace transport_catalogue {
 		return {};
 	}
 
-	json::Node JsonReader::CreateMapNode(const svg::Document& document, const int id) const {
-		stringstream out;
-
-		document.Render(out);
-
+	json::Node JsonReader::CreateMapNode(const string& map, const int id) const {
 		return json::Builder{}
 					.StartDict()
 						.Key("request_id"s).Value(id)
-						.Key("map"s).Value(out.str())
+						.Key("map"s).Value(map)
 					.EndDict()
 				.Build();
 	}
-	
+
 	json::Node JsonReader::CreateRouteNode(const std::optional<response::Route> route, const int id) const {
 		if(route.has_value()) {
 			json::Builder builder;

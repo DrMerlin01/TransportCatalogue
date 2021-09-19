@@ -39,6 +39,8 @@ namespace transport_catalogue {
 
 		size_t GetBusesCount() const;
 
+		const std::unordered_map<std::pair<const domain::Stop*, const domain::Stop*>, double, domain::StopsPairHasher>& GetStopsDistance() const;
+
 		std::set<std::string_view> GetBusesThroughStop(std::string_view stop_name) const;
 
 		double GetActualDistanceBetweenStops(std::string_view from, std::string_view to) const;
