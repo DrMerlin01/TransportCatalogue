@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto_transport_router;
 
-message Settings {
+message RoutingSettings {
 	int32 bus_wait_time = 1;
 	double bus_velocity = 2;
 }

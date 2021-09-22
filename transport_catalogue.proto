@@ -31,6 +31,11 @@ message TransportCatalogue {
 	repeated Stop stops = 1;
 	repeated FromToDistance stops_distance = 2;
 	repeated Bus buses = 3;
-	proto_map_renderer.Map map = 4;
-	proto_transport_router.Settings settings = 5;
 }
+
+message DataBaseCatalogue {
+	TransportCatalogue transport_catalogue = 1;
+	proto_map_renderer.Map map = 2;
+	proto_transport_router.RoutingSettings routing_settings = 3;
+}
+
