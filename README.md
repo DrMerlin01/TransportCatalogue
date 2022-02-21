@@ -2,10 +2,12 @@
 Transport directory. Works with JSON requests. Returns a response to a request to draw routes with an SVG format string. The JSON constructor is implemented using a chain of 
 method calls, obvious errors are at the compilation stage.
 # Building and Run
+```
   1. Create a TransportCatalogueBuild folder and open it
   2. cmake ../TransportCatalogue
   3. cmake --build . 
   4. Start ./transport_catalogue or transport_catalogue.exe
+```
 # Example
 The program accepts two types of requests "make_base" and "process_requests". With the help of "make_base", the base of the transport directory for base_requests requests is 
 formed and its serialization into a file is carried out. At the request of process_requests, the database is deserialized from the file and used to respond to stat_requests 
