@@ -37,5 +37,6 @@ message DataBaseCatalogue {
 	TransportCatalogue transport_catalogue = 1;
 	proto_map_renderer.Map map = 2;
 	proto_transport_router.RoutingSettings routing_settings = 3;
+	proto_transport_router.VertexCount vertex_count = 4;
 }
 

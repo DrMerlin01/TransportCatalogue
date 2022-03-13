@@ -156,6 +156,9 @@ namespace serialization {
 		transport_router::RoutingSettings settings = transport_router_.GetSettings();
 		(*base_.mutable_routing_settings()).set_bus_wait_time(settings.bus_wait_time);
 		(*base_.mutable_routing_settings()).set_bus_velocity(settings.bus_velocity);
+
+		size_t vertex_count = transport_router_.GetVertexCount();
+		(*base_.mutable_vertex_count()).set_count(vertex_count);
 	}
 
 	void Serialization::DeserializeParameters() {
@@ -163,6 +166,10 @@ namespace serialization {
 		result.bus_wait_time = base_.routing_settings().bus_wait_time();
 		result.bus_velocity = base_.routing_settings().bus_velocity();
 		transport_router_.SetSettings(result);
+
+		const size_t vertex_count = base_.vertex_count().count();
+		transport_router_.SetVertexCount(vertex_count);
+
 		transport_router_.CreateRouter();
 	}
 }

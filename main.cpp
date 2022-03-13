@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
 	if (mode == "make_base"sv) {
 		json_reader.FillingCatalogue();
 		renderer.SetRenderSettings(json_reader.GetRendererSettings());
+		router.SetVertexCount(catalogue.GetStopsCount() * 2);
 		router.SetSettings(json_reader.GetRoutingSettings());
 		serialization.SerializeBase();
 	} else if (mode == "process_requests"sv) {

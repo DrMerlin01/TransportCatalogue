@@ -4,8 +4,7 @@ using namespace std;
 
 namespace transport_router {
 	TransportRouter::TransportRouter(const transport_catalogue::TransportCatalogue& db)
-		: db_(db)
-		, graph_(500) {
+		: db_(db) {
 	}
 
 	void TransportRouter::FillingGraphWithStops() {
@@ -33,6 +32,16 @@ namespace transport_router {
 
 		static graph::Router<transport_catalogue::route::Road> router(graph_);
 		router_ = make_unique<graph::Router<transport_catalogue::route::Road>>(router);
+	}
+
+	void TransportRouter::SetVertexCount(const size_t vertex_count) {
+		if (vertex_count > 0) {
+			graph_ = graph::DirectedWeightedGraph<transport_catalogue::route::Road>(vertex_count);
+		}
+	}
+
+	size_t TransportRouter::GetVertexCount() const {
+		return graph_.GetVertexCount();
 	}
 
 	void TransportRouter::SetSettings(const RoutingSettings& settings) {

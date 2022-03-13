@@ -24,9 +24,13 @@ namespace transport_router {
 
 		void SetSettings(const RoutingSettings& settings);
 
+		void SetVertexCount(const size_t vertex_count);
+
 		void CreateRouter();
 
 		RoutingSettings GetSettings() const;
+
+		size_t GetVertexCount() const;
 
 		std::optional<transport_catalogue::response::Route> GetRouteResponse(const std::string_view from, const std::string_view to) const;
 
