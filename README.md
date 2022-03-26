@@ -219,4 +219,3 @@ requests.
   4. Cmake 3.21.2 (minimal 3.10)
 # Future plans
   1. Develop a frontend for drawing a map with a route
-  2. Add tests for all functionality
