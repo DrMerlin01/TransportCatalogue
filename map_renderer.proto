@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package proto_map_renderer;
-
-message Map {
-	bytes description = 1;
-}

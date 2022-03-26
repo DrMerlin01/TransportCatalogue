@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+import "graph.proto";
+import "map_renderer.proto";
+
+package proto_transport_catalogue;
+
+message Coordinates {
+	double lat = 1;
+	double lng = 2;
+}
+
+message Stop {
+	bytes name = 1;
+	Coordinates coordinates = 2;
+}
+
+message Bus {
+	bool is_roundtrip = 1;
+	bytes name = 2;
+	repeated bytes stop_names = 3;
+}
+
+message FromToDistance {
+	bytes from = 1;
+	bytes to = 2;
+	uint64 distance = 3;
+}
+
+message TransportCatalogue {
+	repeated Stop stops = 1;
+	repeated FromToDistance stops_distance = 2;
+	repeated Bus buses = 3;
+}
+
+message DataBaseCatalogue {
+	TransportCatalogue transport_catalogue = 1;
+	proto_map_renderer.Map map = 2;
+	proto_transport_router.RoutingSettings routing_settings = 3;
+	proto_transport_router.VertexCount vertex_count = 4;
+}
+

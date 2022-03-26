@@ -1,16 +1,14 @@
 # TransportCatalogue
-Transport directory. Works with JSON requests. Returns a response to a request to draw routes with an SVG format string. The JSON constructor is implemented using a chain of 
-method calls, obvious errors are at the compilation stage.
+Transport directory. Works with JSON requests. Returns a response to a request to draw routes with an SVG format string. The JSON constructor is implemented using a chain of method calls, obvious errors are at the compilation stage.
 # Building and Run
-```
-  1. Create a TransportCatalogueBuild folder and open it
-  2. cmake ../TransportCatalogue
+``` 
+  1. mkdir TransportCatalogueBuild && cd TransportCatalogueBuild
+  2. cmake .. (if cmake throws a build error that protobuf could not be found, add the variable -DCMAKE_PREFIX_PATH=<path to the assembled protobuf files>)
   3. cmake --build . 
   4. Start ./transport_catalogue or transport_catalogue.exe
 ```
 # Example
-The program accepts two types of requests "make_base" and "process_requests". With the help of "make_base", the base of the transport directory for base_requests requests is 
-formed and its serialization into a file is carried out. At the request of process_requests, the database is deserialized from the file and used to respond to stat_requests 
+The program accepts two types of requests "make_base" and "process_requests". With the help of "make_base", the base of the transport directory for base_requests requests is formed and its serialization into a file is carried out. At the request of process_requests, the database is deserialized from the file and used to respond to stat_requests 
 requests.
  1. Enter "make_base":
 ```
@@ -217,7 +215,7 @@ requests.
 # System requirements and Stack
   1. C++17
   2. GCC version 8.1.0
-  3. Protobuf-cpp 3.18.1
+  3. Protobuf-cpp 3.18.1 (download https://github.com/protocolbuffers/protobuf/releases or install it as a package for linux distribution)
   4. Cmake 3.21.2 (minimal 3.10)
 # Future plans
   1. Develop a frontend for drawing a map with a route
