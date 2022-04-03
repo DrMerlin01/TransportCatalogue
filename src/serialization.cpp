@@ -10,10 +10,10 @@ using namespace std;
 
 namespace serialization {
 	Serialization::Serialization(transport_catalogue::TransportCatalogue& transport_catalogue, renderer::MapRenderer& map_renderer, transport_router::TransportRouter& transport_router, const Path& path_to_base) 
-		: transport_catalogue_(transport_catalogue)
+		: path_to_base_(path_to_base)
+		, transport_catalogue_(transport_catalogue)
 		, map_renderer_(map_renderer)
-		, transport_router_(transport_router)
-		, path_to_base_(path_to_base) { 
+		, transport_router_(transport_router) { 
 	}
 
 	void Serialization::SetSetting(const Path& path_to_base) {

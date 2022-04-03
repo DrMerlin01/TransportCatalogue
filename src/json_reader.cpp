@@ -52,7 +52,7 @@ namespace transport_catalogue {
 	}
 
 	void JsonReader::SetDistanceBetweenStops(const request::Stop& stop) {
-		for(const auto [stop_to, distance] : stop.stop_to_dist) {
+		for(const auto& [stop_to, distance] : stop.stop_to_dist) {
 			db_.SetDistanceBetweenStops(stop.name, stop_to, distance);
 		}
 	}
@@ -259,7 +259,7 @@ namespace transport_catalogue {
 				.Key("request_id"s).Value(id)
 				.Key("total_time"s).Value(route.value().total_time)
 				.Key("items"s).StartArray();
-					for(const auto item : route.value().items) {
+					for(const auto& item : route.value().items) {
 						if(holds_alternative<response::Wait>(item)) {
 							builder.StartDict()
 								.Key("type"s).Value(get<response::Wait>(item).type)
